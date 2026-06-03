@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>什么是 AI Agent · 一份通俗的拆解</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#08090A; --s1:#16171C; --s2:#1E1F25; --s3:#26272E;
+  --line:rgba(255,255,255,.06); --line-2:rgba(255,255,255,.10);
+  --tx:#F7F8F8; --tx2:#9CA3AF; --tx3:#6B7280;
+  --acc:#5E6AD2; --acc-2:#7C89F0; --acc-soft:rgba(94,106,210,.14);
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --sans:'Space Grotesk','Noto Sans SC',-apple-system,sans-serif;
+  --cjk:'Noto Sans SC','Space Grotesk',-apple-system,sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:#000;color:var(--tx);font-family:var(--cjk);
+  display:flex;align-items:center;justify-content:center;
+  height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;
+}
+.stage{
+  width:1920px;height:1080px;position:relative;transform-origin:center center;
+  background:var(--ground);overflow:hidden;
+}
+.slide{
+  position:absolute;inset:0;display:none;flex-direction:column;
+  padding:96px 120px;
+}
+.slide.active{display:flex}
+
+/* ===== reveal animation ===== */
+.reveal{opacity:0;transform:translateY(18px)}
+.slide.active .reveal{animation:reveal .6s var(--ease) forwards;animation-delay:var(--d,0s)}
+@keyframes reveal{to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;animation:none!important}
+  .ring{animation:none!important}
+}
+
+/* ===== shared atoms ===== */
+.kicker{
+  font-family:var(--mono);font-size:22px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--tx3);display:flex;align-items:center;gap:14px;
+}
+.kicker::before{content:"";width:34px;height:1px;background:var(--acc);opacity:.8}
+.chip{
+  font-family:var(--mono);font-size:24px;font-weight:500;color:var(--tx);
+  background:var(--s2);border:1px solid var(--line-2);border-radius:8px;
+  padding:12px 20px;display:inline-flex;align-items:center;gap:10px;
+  transition:border-color .15s ease,transform .15s ease,background .15s ease;
+}
+.chip:hover{border-color:var(--acc);background:var(--s3);transform:translateY(-2px)}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc)}
+.mesh{
+  position:absolute;width:1100px;height:1100px;border-radius:50%;
+  background:radial-gradient(circle,rgba(94,106,210,.16),transparent 62%);
+  filter:blur(20px);pointer-events:none;z-index:0;
+}
+.num-ghost{
+  font-family:var(--sans);font-weight:700;font-size:380px;line-height:.8;
+  color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.06);
+  position:absolute;right:90px;bottom:-40px;z-index:0;user-select:none;
+}
+h1.title{font-family:var(--sans);font-weight:700;letter-spacing:-.02em;line-height:1.04}
+.lead{color:var(--tx2);line-height:1.7;font-weight:300}
+.spine{position:relative;z-index:2}
+
+/* ===== cards ===== */
+.card{
+  background:var(--s1);border:1px solid var(--line);border-radius:16px;
+  padding:38px 40px;position:relative;overflow:hidden;
+  transition:border-color .15s ease,transform .15s ease;
+}
+.card:hover{border-color:var(--line-2);transform:translateY(-3px)}
+.card .idx{font-family:var(--mono);font-size:20px;color:var(--acc);font-weight:600}
+.card h3{font-family:var(--sans);font-size:34px;font-weight:600;margin:14px 0 6px;letter-spacing:-.01em}
+.card .role{font-family:var(--mono);font-size:18px;color:var(--tx3);letter-spacing:.04em;margin-bottom:18px}
+.card p,.card li{color:var(--tx2);font-size:23px;line-height:1.55;font-weight:300}
+
+/* ===== controls ===== */
+.hud-top{position:fixed;top:0;left:0;height:3px;width:100%;background:rgba(255,255,255,.05);z-index:1000}
+.hud-bar{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc-2));width:0;transition:width .45s var(--ease)}
+.controls{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;z-index:1000}
+.controls button{
+  width:46px;height:46px;border:1px solid var(--line-2);border-radius:10px;
+  background:rgba(22,23,28,.8);backdrop-filter:blur(10px);color:var(--tx2);
+  cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;
+  transition:all .15s ease;
+}
+.controls button:hover{color:var(--tx);border-color:var(--acc);background:var(--s3)}
+.counter{font-family:var(--mono);font-size:15px;color:var(--tx3);padding:0 14px;min-width:78px;text-align:center}
+.hint{position:fixed;bottom:30px;right:26px;font-family:var(--mono);font-size:13px;color:var(--tx3);z-index:1000;opacity:.7}
+
+/* ===== loop ring ===== */
+.ring-wrap{position:relative;width:560px;height:560px;margin:auto}
+.ring{position:absolute;inset:0;border:2px dashed rgba(94,106,210,.35);border-radius:50%;animation:spin 32s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.node{
+  position:absolute;top:50%;left:50%;
+  font-family:var(--mono);font-size:23px;font-weight:500;white-space:nowrap;
+  padding:14px 22px;border-radius:10px;background:var(--s2);border:1px solid var(--line-2);
+}
+.node.act{background:var(--acc-soft);border-color:var(--acc);color:#cfd4ff}
+.ring-core{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;
+}
+.ring-core .big{font-family:var(--sans);font-size:46px;font-weight:700;letter-spacing:-.02em}
+.ring-core .sub{font-family:var(--mono);font-size:17px;color:var(--tx3);letter-spacing:.1em;margin-top:6px}
+
+/* ===== terminal ===== */
+.term{background:#0c0d10;border:1px solid var(--line-2);border-radius:14px;overflow:hidden;font-family:var(--mono)}
+.term-bar{display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--s1)}
+.term-bar i{width:11px;height:11px;border-radius:50%;display:inline-block}
+.term-bar .t{margin-left:12px;font-size:15px;color:var(--tx3)}
+.term-body{padding:24px 26px;font-size:19px;line-height:1.85}
+.term-body .u{color:var(--tx)}
+.term-body .ai{color:var(--acc-2)}
+.term-body .tool{color:#7fd1b9}
+.term-body .mut{color:var(--tx3)}
+.term-body .pre{color:var(--tx3)}
+
+/* ===== flow steps ===== */
+.step{display:flex;gap:22px;align-items:flex-start}
+.step .n{
+  flex:none;width:46px;height:46px;border-radius:10px;background:var(--s2);border:1px solid var(--line-2);
+  font-family:var(--mono);font-weight:600;font-size:20px;color:var(--acc);
+  display:flex;align-items:center;justify-content:center;
+}
+.step .st{font-family:var(--sans);font-size:25px;font-weight:600}
+.step .sd{color:var(--tx2);font-size:19px;font-weight:300;margin-top:3px;line-height:1.5}
+
+/* ===== compare ===== */
+.vs{display:grid;grid-template-columns:1fr 64px 1fr;align-items:stretch;gap:0}
+.vs .col{padding:44px;border:1px solid var(--line);border-radius:16px;background:var(--s1)}
+.vs .col.hot{background:linear-gradient(160deg,rgba(94,106,210,.10),var(--s1));border-color:rgba(94,106,210,.35)}
+.vs .mid{display:flex;align-items:center;justify-content:center;color:var(--tx3);font-family:var(--mono);font-size:22px}
+.vs h4{font-family:var(--sans);font-size:30px;font-weight:600;margin-bottom:8px}
+.vs .tag{font-family:var(--mono);font-size:16px;letter-spacing:.1em;color:var(--tx3);text-transform:uppercase}
+.vs ul{list-style:none;margin-top:24px;display:flex;flex-direction:column;gap:14px}
+.vs li{color:var(--tx2);font-size:22px;font-weight:300;padding-left:26px;position:relative;line-height:1.5}
+.vs li::before{content:"";position:absolute;left:0;top:11px;width:8px;height:8px;border-radius:2px;background:var(--tx3)}
+.vs .hot li::before{background:var(--acc)}
+
+.list-clean{list-style:none;display:flex;flex-direction:column;gap:16px}
+.list-clean li{position:relative;padding-left:30px;color:var(--tx2);font-size:25px;font-weight:300;line-height:1.5}
+.list-clean li::before{content:"";position:absolute;left:0;top:13px;width:9px;height:9px;border-radius:50%;border:2px solid var(--acc)}
+.quote{font-family:var(--sans);font-weight:500;line-height:1.3;letter-spacing:-.01em}
+.accent{color:var(--acc-2)}
+.barlabel{font-family:var(--mono);font-size:18px;color:var(--tx3);letter-spacing:.06em}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+
+  <!-- 01 COVER -->
+  <section class="slide" data-screen-label="01 封面">
+    <div class="mesh" style="top:-380px;left:-260px"></div>
+    <div class="mesh" style="bottom:-460px;right:-220px;background:radial-gradient(circle,rgba(124,137,240,.12),transparent 62%)"></div>
+    <div class="spine" style="margin:auto 0">
+      <div class="kicker reveal" style="--d:.05s">A FRIENDLY BREAKDOWN · 2026</div>
+      <h1 class="title reveal" style="font-size:128px;margin:34px 0 0;--d:.15s">什么是 <span class="accent">AI&nbsp;Agent</span>？</h1>
+      <h1 class="title reveal" style="font-size:128px;color:var(--tx2);font-weight:400;--d:.25s">你每天都在用，<br>却没意识到。</h1>
+      <p class="lead reveal" style="font-size:30px;max-width:1080px;margin-top:40px;--d:.4s">
+        从「会聊天的机器人」到「能干活的数字员工」——用最通俗的比喻，一次讲清 Agent 的大脑、双手、神经与身体。
+      </p>
+      <div class="reveal" style="display:flex;gap:14px;margin-top:50px;--d:.55s">
+        <span class="chip"><span class="dot"></span>模型 · 大脑</span>
+        <span class="chip">工具 · 双手</span>
+        <span class="chip">编排 · 神经系统</span>
+        <span class="chip">部署 · 身体</span>
+      </div>
+    </div>
+    <div class="num-ghost" style="right:120px;bottom:60px;font-size:300px">01</div>
+  </section>
+
+  <!-- 02 你早就在用 -->
+  <section class="slide" data-screen-label="02 工具墙">
+    <div class="kicker reveal">引子 / WARM-UP</div>
+    <h1 class="title reveal" style="font-size:62px;margin-top:22px;--d:.1s">其实，你早就在用 Agent 了</h1>
+    <p class="lead reveal" style="font-size:26px;margin-top:16px;max-width:1180px;--d:.18s">
+      “Agent（智能体）”这两年几乎成了高频词。有意思的是——很多人每天都在用，却没意识到自己在用。
+    </p>
+    <div class="spine" style="margin-top:54px;display:grid;grid-template-columns:repeat(3,1fr);gap:30px">
+      <div class="card reveal" style="--d:.26s">
+        <div class="role" style="margin-bottom:22px">用它来 · 写代码</div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px">
+          <span class="chip">Claude Code</span><span class="chip">Codex</span>
+          <span class="chip">Gemini CLI</span><span class="chip">OpenCode</span>
+        </div>
+      </div>
+      <div class="card reveal" style="--d:.36s">
+        <div class="role" style="margin-bottom:22px">用它来 · 辅助开发</div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px">
+          <span class="chip">Cursor</span><span class="chip">VSCode 插件</span>
+          <span class="chip">Google Antigravity</span>
+        </div>
+      </div>
+      <div class="card reveal" style="--d:.46s">
+        <div class="role" style="margin-bottom:22px">用它来 · 自动执行任务</div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px">
+          <span class="chip">OpenClaw</span><span class="chip">CoClaw</span>
+          <span class="chip">LobsterAI</span>
+        </div>
+      </div>
+    </div>
+    <p class="reveal quote" style="font-size:40px;margin-top:64px;--d:.58s">
+      这些工具的背后，其实都在运行着 <span class="accent">AI Agent</span>。
+    </p>
+  </section>
+
+  <!-- 03 ChatBot vs Agent -->
+  <section class="slide" data-screen-label="03 ChatBot vs Agent">
+    <div class="kicker reveal">一个常见的误解</div>
+    <h1 class="title reveal" style="font-size:54px;margin:22px 0 10px;--d:.08s">
+      “不就是更聪明一点的聊天机器人吗？”<span class="accent"> 其实不是。</span>
+    </h1>
+    <div class="spine vs reveal" style="margin-top:60px;--d:.2s">
+      <div class="col">
+        <div class="tag">CHATBOT</div>
+        <h4>会聊天的人</h4>
+        <ul>
+          <li>只会“回答问题”</li>
+          <li>一问一答，对话即终点</li>
+          <li>停留在“说”的层面</li>
+        </ul>
+      </div>
+      <div class="mid">VS</div>
+      <div class="col hot">
+        <div class="tag" style="color:var(--acc-2)">AI AGENT</div>
+        <h4>能帮你干活的同事</h4>
+        <ul>
+          <li>不仅会思考，还会<span class="accent">行动</span></li>
+          <li>思考 → 行动 → 总结 → 再思考</li>
+          <li>能真正“把事办成”</li>
+        </ul>
+      </div>
+    </div>
+    <p class="reveal quote" style="font-size:34px;color:var(--tx2);margin-top:54px;--d:.4s">
+      ChatBot 像一个会聊天的人，Agent 更像一个能帮你干活的同事——这就是它们真正的区别。
+    </p>
+  </section>
+
+  <!-- 04 把 Agent 想象成一个人 -->
+  <section class="slide" data-screen-label="04 核心比喻">
+    <div class="mesh" style="top:-300px;right:-200px"></div>
+    <div class="kicker reveal">核心比喻 / THE METAPHOR</div>
+    <h1 class="title reveal" style="font-size:56px;margin-top:20px;--d:.08s">如果把 AI Agent 比作一个人</h1>
+    <p class="lead reveal" style="font-size:26px;margin-top:14px;--d:.16s">它不仅会说话，还能<span class="accent">思考、行动、总结，再继续思考</span>。</p>
+    <div class="spine" style="display:grid;grid-template-columns:repeat(4,1fr);gap:26px;margin-top:64px">
+      <div class="card reveal" style="--d:.3s">
+        <div class="idx">大脑</div><h3>模型</h3>
+        <div class="role">THE&nbsp;BRAIN</div>
+        <p>会思考——理解、分析、决策</p>
+      </div>
+      <div class="card reveal" style="--d:.4s">
+        <div class="idx">双手</div><h3>工具</h3>
+        <div class="role">THE&nbsp;HANDS</div>
+        <p>能行动——与外部世界交互</p>
+      </div>
+      <div class="card reveal" style="--d:.5s">
+        <div class="idx">神经系统</div><h3>编排层</h3>
+        <div class="role">THE&nbsp;NERVES</div>
+        <p>会规划——决定下一步做什么</p>
+      </div>
+      <div class="card reveal" style="--d:.6s">
+        <div class="idx">身体</div><h3>部署</h3>
+        <div class="role">THE&nbsp;BODY</div>
+        <p>稳运行——支撑它长期工作</p>
+      </div>
+    </div>
+    <p class="reveal" style="font-family:var(--mono);font-size:22px;color:var(--tx3);margin-top:56px;--d:.72s">
+      // 接下来，用最通俗的方式逐一拆解这四个部分
+    </p>
+  </section>
+
+  <!-- 05 SECTION 一 -->
+  <section class="slide" data-screen-label="05 章节·四个核心">
+    <div class="mesh" style="bottom:-420px;left:-200px"></div>
+    <div class="spine" style="margin:auto 0">
+      <div class="kicker reveal">PART ONE</div>
+      <h1 class="title reveal" style="font-size:96px;margin-top:30px;--d:.12s">AI Agent 的<br>四个核心部分</h1>
+      <p class="lead reveal" style="font-size:28px;margin-top:34px;--d:.26s">大脑 · 双手 · 神经系统 · 身体——缺一不可。</p>
+    </div>
+    <div class="num-ghost">一</div>
+  </section>
+
+  <!-- 06 模型 -->
+  <section class="slide" data-screen-label="06 模型·大脑">
+    <div class="kicker reveal">核心部分 1 / 4</div>
+    <div class="spine" style="display:grid;grid-template-columns:1fr 1fr;gap:80px;margin-top:auto;margin-bottom:auto;align-items:center">
+      <div>
+        <div class="reveal" style="font-family:var(--mono);font-size:24px;color:var(--acc);letter-spacing:.1em;--d:.1s">1️⃣&nbsp;&nbsp;THE BRAIN</div>
+        <h1 class="title reveal" style="font-size:80px;margin:18px 0 8px;--d:.16s">模型</h1>
+        <p class="reveal" style="font-size:30px;color:var(--tx2);font-weight:300;--d:.22s">会思考的大脑</p>
+        <p class="reveal lead" style="font-size:25px;margin-top:36px;max-width:640px;--d:.3s">
+          模型是 Agent 的大脑。但大模型本身是一个
+          <span class="accent">“行动无能的天才”</span>——
+          Agent 通过软件封装，让它能够调用工具、真正动手。
+        </p>
+      </div>
+      <div class="reveal" style="--d:.36s">
+        <div class="barlabel" style="margin-bottom:24px">它负责</div>
+        <ul class="list-clean">
+          <li>理解问题</li><li>分析信息</li><li>做出决策</li><li>给出回答</li>
+        </ul>
+      </div>
+    </div>
+    <div class="num-ghost">01</div>
+  </section>
+
+  <!-- 07 工具 -->
+  <section class="slide" data-screen-label="07 工具·双手">
+    <div class="kicker reveal">核心部分 2 / 4</div>
+    <div class="spine" style="display:grid;grid-template-columns:1fr 1fr;gap:80px;margin:auto 0;align-items:center">
+      <div>
+        <div class="reveal" style="font-family:var(--mono);font-size:24px;color:var(--acc);letter-spacing:.1em;--d:.1s">2️⃣&nbsp;&nbsp;THE HANDS</div>
+        <h1 class="title reveal" style="font-size:80px;margin:18px 0 8px;--d:.16s">工具</h1>
+        <p class="reveal" style="font-size:30px;color:var(--tx2);font-weight:300;--d:.22s">能行动的双手</p>
+        <p class="reveal lead" style="font-size:25px;margin-top:36px;max-width:640px;--d:.3s">
+          工具是 Agent 的双手，让它能跟外界互动。
+        </p>
+        <p class="reveal quote" style="font-size:30px;margin-top:30px;--d:.4s">
+          没有工具，模型只能<span style="color:var(--tx3)">“思考”</span>；<br>有了工具，它才能<span class="accent">“做”</span>。
+        </p>
+      </div>
+      <div class="reveal" style="--d:.36s">
+        <div class="barlabel" style="margin-bottom:24px">常见的工具</div>
+        <div style="display:flex;flex-wrap:wrap;gap:14px;max-width:560px">
+          <span class="chip">调用 API 接口</span><span class="chip">查询数据库</span>
+          <span class="chip">运行代码</span><span class="chip">访问文件</span>
+          <span class="chip">搜索信息</span><span class="chip">执行各种脚本</span>
+        </div>
+      </div>
+    </div>
+    <div class="num-ghost">02</div>
+  </section>
+
+  <!-- 08 编排层 -->
+  <section class="slide" data-screen-label="08 编排层·神经">
+    <div class="kicker reveal">核心部分 3 / 4</div>
+    <div class="spine" style="display:grid;grid-template-columns:1fr 1fr;gap:80px;margin:auto 0;align-items:center">
+      <div>
+        <div class="reveal" style="font-family:var(--mono);font-size:24px;color:var(--acc);letter-spacing:.1em;--d:.1s">3️⃣&nbsp;&nbsp;THE NERVOUS SYSTEM</div>
+        <h1 class="title reveal" style="font-size:72px;margin:18px 0 8px;--d:.16s">编排层</h1>
+        <p class="reveal" style="font-size:30px;color:var(--tx2);font-weight:300;--d:.22s">会规划的神经系统</p>
+        <p class="reveal lead" style="font-size:25px;margin-top:36px;max-width:640px;--d:.3s">
+          简单来说，编排层就是决定<span class="accent">“下一步该做什么”</span>的控制中心。
+        </p>
+      </div>
+      <div class="reveal" style="--d:.36s">
+        <div class="barlabel" style="margin-bottom:24px">它负责</div>
+        <ul class="list-clean">
+          <li>规划下一步做什么（规划）</li>
+          <li>管理记忆（短期 / 长期）</li>
+          <li>上下文工程（动态管理 Prompt）</li>
+          <li>决定什么时候调用工具</li>
+          <li>组织和安排每一步的推理过程</li>
+        </ul>
+      </div>
+    </div>
+    <div class="num-ghost">03</div>
+  </section>
+
+  <!-- 09 部署 -->
+  <section class="slide" data-screen-label="09 部署·身体">
+    <div class="kicker reveal">核心部分 4 / 4</div>
+    <div class="spine" style="display:grid;grid-template-columns:1fr 1fr;gap:80px;margin:auto 0;align-items:center">
+      <div>
+        <div class="reveal" style="font-family:var(--mono);font-size:24px;color:var(--acc);letter-spacing:.1em;--d:.1s">4️⃣&nbsp;&nbsp;THE BODY</div>
+        <h1 class="title reveal" style="font-size:80px;margin:18px 0 8px;--d:.16s">部署</h1>
+        <p class="reveal" style="font-size:30px;color:var(--tx2);font-weight:300;--d:.22s">稳定运行的身体</p>
+        <p class="reveal lead" style="font-size:25px;margin-top:36px;max-width:640px;--d:.3s">
+          部署层是 Agent 的“身体”，它确保 Agent 能
+          <span class="accent">稳定运行</span>，而不像一个临时的实验脚本。
+        </p>
+      </div>
+      <div class="reveal" style="--d:.36s">
+        <div class="barlabel" style="margin-bottom:24px">它包括</div>
+        <ul class="list-clean">
+          <li>服务器托管</li><li>权限控制</li><li>日志监控</li><li>安全机制</li>
+        </ul>
+      </div>
+    </div>
+    <div class="num-ghost">04</div>
+  </section>
+
+  <!-- 10 SECTION 二 -->
+  <section class="slide" data-screen-label="10 章节·怎么解决问题">
+    <div class="mesh" style="top:-360px;right:-260px"></div>
+    <div class="spine" style="margin:auto 0">
+      <div class="kicker reveal">PART TWO</div>
+      <h1 class="title reveal" style="font-size:90px;margin-top:30px;--d:.12s">AI Agent 是<br>怎么解决问题的？</h1>
+      <p class="lead reveal" style="font-size:28px;margin-top:34px;max-width:1000px;--d:.26s">
+        它不是简单的直线执行，而是一个 <span class="accent">“思考 — 行动 — 再思考”</span> 的循环。
+      </p>
+    </div>
+    <div class="num-ghost">二</div>
+  </section>
+
+  <!-- 11 六步流程 + 例子 -->
+  <section class="slide" data-screen-label="11 六步流程">
+    <div class="kicker reveal">工作流 / THE LOOP IN ACTION</div>
+    <h1 class="title reveal" style="font-size:50px;margin-top:18px;--d:.08s">六步走完一个任务</h1>
+    <div class="spine" style="display:grid;grid-template-columns:0.92fr 1.08fr;gap:64px;margin-top:46px;align-items:center">
+      <div style="display:flex;flex-direction:column;gap:26px">
+        <div class="step reveal" style="--d:.2s"><div class="n">1</div><div><div class="st">接收任务</div><div class="sd">用户提问，给出目标</div></div></div>
+        <div class="step reveal" style="--d:.28s"><div class="n">2</div><div><div class="st">组装上下文</div><div class="sd">请求 + 历史 + 可用工具 + 数据 + 系统指令</div></div></div>
+        <div class="step reveal" style="--d:.36s"><div class="n">3</div><div><div class="st">模型做判断</div><div class="sd">能直接答？还是需要调用工具？</div></div></div>
+        <div class="step reveal" style="--d:.44s"><div class="n">4</div><div><div class="st">执行工具</div><div class="sd">编排层拦截请求，执行真实操作</div></div></div>
+        <div class="step reveal" style="--d:.52s"><div class="n">5</div><div><div class="st">回填结果，再思考</div><div class="sd">结果进上下文 →「够了吗？」不够就继续</div></div></div>
+        <div class="step reveal" style="--d:.6s"><div class="n">6</div><div><div class="st">输出最终答案</div><div class="sd">信息足够，才生成回答</div></div></div>
+      </div>
+      <div class="term reveal" style="--d:.4s">
+        <div class="term-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="t">agent-trace · 示例</span></div>
+        <div class="term-body">
+          <div class="mut"># 第一步 · 接收任务</div>
+          <div class="u">&gt; 帮我分析一下英伟达的股价走势</div>
+          <div style="height:14px"></div>
+          <div class="mut"># 第三步 · 模型判断需要工具</div>
+          <div class="ai">model: 我要调用 API 查询英伟达历史 K 线，</div>
+          <div class="ai">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;并用 Web 实时搜索近期重大事件的利好利空。</div>
+          <div style="height:14px"></div>
+          <div class="mut"># 第四步 · 执行工具</div>
+          <div class="tool">› tool: get_kline(NVDA) ……done</div>
+          <div class="tool">› tool: web_search("英伟达 近期事件") ……done</div>
+          <div style="height:14px"></div>
+          <div class="mut"># 第五步 · 回填再思考</div>
+          <div class="pre">model: 数据已就绪，信息足够 ✓</div>
+          <div style="height:14px"></div>
+          <div class="mut"># 第六步 · 输出</div>
+          <div class="u">✦ 生成最终分析报告</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 闭环机制 -->
+  <section class="slide" data-screen-label="12 闭环机制">
+    <div class="mesh" style="top:50%;left:50%;transform:translate(-50%,-50%);width:900px;height:900px"></div>
+    <div class="kicker reveal" style="position:relative;z-index:3">闭环机制 / THE CLOSED LOOP</div>
+    <h1 class="title reveal" style="font-size:50px;margin-top:18px;position:relative;z-index:3;--d:.08s">不是直线，而是一个闭环</h1>
+    <div class="spine reveal" style="margin:auto;--d:.2s">
+      <div class="ring-wrap">
+        <div class="ring"></div>
+        <div class="ring-core">
+          <div class="big">闭环</div>
+          <div class="sub">SENSE · THINK · ACT</div>
+        </div>
+        <!-- 6 nodes at 60° steps, start top -->
+        <div class="node act" style="transform:translate(-50%,-50%) rotate(0deg) translateY(-258px) rotate(0deg)">思考</div>
+        <div class="node"     style="transform:translate(-50%,-50%) rotate(60deg) translateY(-258px) rotate(-60deg)">行动</div>
+        <div class="node"     style="transform:translate(-50%,-50%) rotate(120deg) translateY(-258px) rotate(-120deg)">观察</div>
+        <div class="node act" style="transform:translate(-50%,-50%) rotate(180deg) translateY(-258px) rotate(-180deg)">再思考</div>
+        <div class="node"     style="transform:translate(-50%,-50%) rotate(240deg) translateY(-258px) rotate(-240deg)">再行动</div>
+        <div class="node"     style="transform:translate(-50%,-50%) rotate(300deg) translateY(-258px) rotate(-300deg)">输出</div>
+      </div>
+    </div>
+    <p class="reveal" style="text-align:center;font-family:var(--mono);font-size:22px;color:var(--tx2);position:relative;z-index:3;--d:.5s">
+      思考 → 行动 → 观察 → 再思考 → 再行动 → <span class="accent">输出</span>
+    </p>
+  </section>
+
+  <!-- 13 为什么比 Prompt 强 -->
+  <section class="slide" data-screen-label="13 为何强过Prompt">
+    <div class="kicker reveal">PART THREE</div>
+    <h1 class="title reveal" style="font-size:54px;margin-top:20px;--d:.08s">为什么比普通提示词更强？</h1>
+    <div class="spine vs reveal" style="margin-top:56px;--d:.2s">
+      <div class="col">
+        <div class="tag">传统方式 · PROMPT</div>
+        <h4 style="font-family:var(--mono);font-size:24px;font-weight:500;color:var(--tx2);margin-top:16px;line-height:1.6">
+          写一个提示词<br>→ 得到一个回答<br>→ 结束
+        </h4>
+        <p style="color:var(--tx3);font-size:21px;margin-top:24px;line-height:1.6">注重优化<b style="color:var(--tx2);font-weight:500">单一提示词</b></p>
+      </div>
+      <div class="mid">→</div>
+      <div class="col hot">
+        <div class="tag" style="color:var(--acc-2)">AI AGENT</div>
+        <h4 style="font-family:var(--mono);font-size:24px;font-weight:500;color:#cfd4ff;margin-top:16px;line-height:1.6">
+          管理动态上下文<br>→ 多轮推理 → 主动调用工具<br>→ 完成目标
+        </h4>
+        <p style="color:var(--tx2);font-size:21px;margin-top:24px;line-height:1.6">强调<b class="accent">构建一个智能系统</b>，按上下文动态调整</p>
+      </div>
+    </div>
+    <p class="reveal quote" style="font-size:38px;text-align:center;margin-top:60px;--d:.42s">
+      从 <span style="color:var(--tx2)">提示词工程</span> &nbsp;<span style="font-family:var(--mono);color:var(--acc)">⇒</span>&nbsp; <span class="accent">上下文工程（Context Engineering）</span>
+    </p>
+  </section>
+
+  <!-- 14 类比 -->
+  <section class="slide" data-screen-label="14 类比·导演">
+    <div class="kicker reveal">PART FOUR · 一个简单的类比</div>
+    <div class="spine" style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin:auto 0">
+      <div class="card reveal" style="padding:54px;--d:.16s">
+        <div class="role">传统程序</div>
+        <p class="quote" style="font-size:34px;color:var(--tx);margin:16px 0 22px">你写好每一步代码，<br>机器照着严格执行。</p>
+        <p style="color:var(--tx3);font-size:22px;font-weight:300">你是那个“写流程的人”。</p>
+      </div>
+      <div class="card reveal" style="padding:54px;background:linear-gradient(160deg,rgba(94,106,210,.10),var(--s1));border-color:rgba(94,106,210,.35);--d:.3s">
+        <div class="role" style="color:var(--acc-2)">构建 AI Agent</div>
+        <p class="quote" style="font-size:34px;color:var(--tx);margin:16px 0 22px">你设定目标和规则，<br>AI 自己去规划路径。</p>
+        <p style="color:var(--tx2);font-size:22px;font-weight:300">你变成了 <span class="accent">“导演”</span>，引导 AI 完成任务。</p>
+      </div>
+    </div>
+    <p class="reveal quote" style="font-size:32px;color:var(--tx2);text-align:center;margin-top:50px;--d:.44s">
+      你不再是“写流程的人”，而是<span class="accent">引导 AI 的导演</span>。
+    </p>
+  </section>
+
+  <!-- 15 总结 -->
+  <section class="slide" data-screen-label="15 总结">
+    <div class="mesh" style="bottom:-420px;right:-220px"></div>
+    <div class="kicker reveal">PART FIVE · 总结一句话</div>
+    <h1 class="title reveal" style="font-size:50px;margin-top:20px;max-width:1280px;line-height:1.2;--d:.08s">
+      AI Agent 是一个能在循环中<span class="accent">自主完成任务</span>的智能系统
+    </h1>
+    <div class="spine" style="display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:54px">
+      <div class="card reveal" style="padding:30px 32px;--d:.24s"><h3 style="font-size:28px;margin:0">明确的目标</h3></div>
+      <div class="card reveal" style="padding:30px 32px;--d:.32s"><h3 style="font-size:28px;margin:0">可调用的工具</h3></div>
+      <div class="card reveal" style="padding:30px 32px;--d:.4s"><h3 style="font-size:28px;margin:0">稳定的记忆</h3></div>
+      <div class="card reveal" style="padding:30px 32px;--d:.48s"><h3 style="font-size:28px;margin:0">合理的编排</h3></div>
+    </div>
+    <p class="reveal lead" style="font-size:27px;margin-top:46px;max-width:1280px;--d:.58s">
+      它不仅能思考，还能去做，并不断优化——因此不再只是聊天机器人，而是一个能解决实际问题的
+      <span class="accent">“数字员工”</span>。如果说大模型是大脑，那么 AI Agent 就是一个完整的、能解决问题的人。
+    </p>
+  </section>
+
+  <!-- 16 结尾 -->
+  <section class="slide" data-screen-label="16 结尾">
+    <div class="mesh" style="top:-360px;left:-240px"></div>
+    <div class="spine" style="margin:auto 0;max-width:1280px">
+      <div class="kicker reveal">真正的挑战</div>
+      <h1 class="title reveal" style="font-size:60px;margin-top:26px;line-height:1.22;--d:.12s">
+        挑战不是让模型更聪明，<br>而是<span class="accent">构建合理的上下文与行动系统</span>。
+      </h1>
+      <p class="lead reveal" style="font-size:28px;margin-top:34px;--d:.26s">让它能够高效地替代我们现有的工作。</p>
+      <div class="reveal" style="margin-top:64px;display:flex;align-items:center;gap:20px;--d:.4s">
+        <span class="quote" style="font-size:36px">现在，你搞明白什么是 AI Agent 了吗？</span>
+      </div>
+      <p class="reveal" style="font-family:var(--mono);font-size:22px;color:var(--tx3);margin-top:24px;--d:.5s">
+        // 有不理解的地方，欢迎留言，一起讨论 👋
+      </p>
+    </div>
+    <div class="num-ghost" style="font-size:240px">16</div>
+  </section>
+
+</div>
+
+<!-- HUD -->
+<div class="hud-top"><div class="hud-bar" id="bar"></div></div>
+<div class="controls">
+  <button id="prev" aria-label="上一页">‹</button>
+  <span class="counter" id="counter">01 / 16</span>
+  <button id="next" aria-label="下一页">›</button>
+</div>
+<div class="hint">← → 翻页 · Space 下一页</div>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  function scaleStage(){
+    var s=Math.min(window.innerWidth/1920, window.innerHeight/1080);
+    stage.style.transform='scale('+s+')';
+  }
+  window.addEventListener('resize',scaleStage); scaleStage();
+
+  var slides=document.querySelectorAll('.slide');
+  var total=slides.length;
+  var current=parseInt(localStorage.getItem('agentDeckIdx')||'0',10);
+  if(isNaN(current)||current<0||current>=total) current=0;
+  var bar=document.getElementById('bar');
+  var counter=document.getElementById('counter');
+  function pad(n){return (n<10?'0':'')+n;}
+  function show(n){
+    current=Math.max(0,Math.min(n,total-1));
+    slides.forEach(function(s,i){s.classList.toggle('active',i===current);});
+    localStorage.setItem('agentDeckIdx',current);
+    counter.textContent=pad(current+1)+' / '+pad(total);
+    bar.style.width=((current+1)/total*100)+'%';
+  }
+  document.getElementById('next').onclick=function(){show(current+1);};
+  document.getElementById('prev').onclick=function(){show(current-1);};
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();show(current+1);}
+    if(e.key==='ArrowLeft'){e.preventDefault();show(current-1);}
+    if(e.key==='Home'){show(0);} if(e.key==='End'){show(total-1);}
+  });
+  show(current);
+})();
+</script>
+</body>
+</html>

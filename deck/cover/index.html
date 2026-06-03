@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>封面 · 手把手教你 Codex 接入国产模型</title>
+<!--
+  视觉页（路线B：图当底 + HTML叠字）
+  底图 bg.png：人物在右、左侧留白薰衣草紫、NO text
+  标题叠在左侧留白安全区；字号用 vw，全屏任意比例等比缩放
+  bg.png 未就绪时用 fallback 渐变占位，出图后自动显示真图
+-->
+<style>
+:root{
+  --accent:#f6c945;          /* 高亮黄 */
+  --purple:#6a4fd0;          /* 描边/胶囊紫 */
+  --purple-deep:#4a35a8;
+  --font:"Yuanti SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:#7a5ce0}
+.slide{position:fixed;inset:0;
+  /* 出图后把下面这行的渐变换成真图即可：background:url("bg.png") center/cover no-repeat; */
+  background:url("bg.png") center center/cover no-repeat,
+             linear-gradient(120deg,#8f72f0 0%,#a98ef5 55%,#c9b6fb 100%);
+  display:flex;flex-direction:row;align-items:center;justify-content:flex-start}
+
+/* 左侧留白处加一层水平遮罩，保证文字区零色差（坑#4：用90deg水平，别用斜向） */
+.slide::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(120,92,224,.55) 0 42%,rgba(120,92,224,.18) 58%,transparent 74%);}
+
+.titlebox{position:relative;z-index:2;margin-left:8%;max-width:60%}
+
+.kicker{display:inline-block;background:var(--accent);color:#5a3d00;
+  font-size:1.9vw;font-weight:900;font-family:var(--font);
+  padding:.55vw 1.4vw;border-radius:1vw;margin-bottom:1.8vw;
+  box-shadow:0 .4vw .9vw rgba(60,40,140,.35)}
+
+.title{font-size:6.6vw;font-weight:900;color:#fff;line-height:1.12;font-family:var(--font);
+  -webkit-text-stroke:.42vw var(--purple);paint-order:stroke fill;
+  text-shadow:0 .4vw 0 rgba(74,53,168,.55),0 .8vw 1vw rgba(60,40,140,.42)}
+.title .em{color:var(--accent);-webkit-text-stroke:.42vw #c98a14}
+.title .en{font-family:"Arial Black","Segoe UI",var(--font)}
+
+.sub{display:inline-block;margin-top:2vw;background:var(--purple);color:#fff;
+  font-size:2.5vw;font-weight:800;font-family:var(--font);
+  padding:1vw 2.4vw;border-radius:1.4vw;
+  box-shadow:inset 0 .2vw .5vw rgba(255,255,255,.25),0 .6vw 1.1vw rgba(60,40,140,.35)}
+
+.handle{position:fixed;left:8%;bottom:5%;z-index:2;color:#fff;
+  font-size:1.7vw;font-weight:800;font-family:var(--font);opacity:.92;
+  text-shadow:0 .2vw .5vw rgba(60,40,140,.5)}
+.handle b{color:var(--accent)}
+</style>
+</head>
+<body>
+  <div class="slide">
+    <div class="titlebox">
+      <span class="kicker">小白一次也能成功</span>
+      <div class="title">手把手教你<br><span class="en">Codex</span> 接入<span class="em">国产模型</span></div>
+      <span class="sub">又快 · 又便宜 · 不踩坑</span>
+    </div>
+    <div class="handle">关注 <b>AI 少年</b>，带你玩转 AI 新时代</div>
+  </div>
+</body>
+</html>
