@@ -24,17 +24,16 @@
 
 | 部位 | 设定 | 英文 |
 |---|---|---|
-| 外层 | 深藏青 / 黑色拉链连帽外套 | dark navy zip-up hoodie jacket |
-| 中层 | 白色衬衫领外露 | white shirt collar showing |
-| 内层 | 浅灰色 T 恤 | light grey t-shirt |
-| 整体 | 休闲层次叠穿，创作者日常感 | casual layered creator look |
+| 上装 | **珊瑚橘 / 三文鱼色短袖 T 恤**（当前主形象） | coral / salmon short-sleeve t-shirt |
+| 整体 | 简洁清爽的单件短袖，创作者日常感 | clean casual creator look, single short-sleeve tee |
+| 道具 | 身前一台笔记本，**机盖朝镜头、印一个发光白色 Apple 图标**（直播感） | a laptop with the lid facing camera, small glowing white Apple logo on the back |
 
 ## 四、粘土风格规格（视觉统一锚点）
 
 - 风格词：`3D clay claymation style, soft matte plasticine texture, rounded forms, handmade stop-motion look`
 - 质感：哑光橡皮泥、圆润体块、轻微指纹手作感、柔和棚光
 - 比例：略卡通化的大头友好比例（比写实更圆、更可爱）
-- 配色锚点：人物深藏青+灰白，搭配封面留白侧 **柔和薰衣草紫**（与 visual-deck 默认色板 `#7a5ce0 / #6a4fd0`、高亮 `#f6c945` 一致）
+- 配色锚点：人物 **珊瑚橘短袖**，搭配 **柔和薰衣草紫** 背景（与 visual-deck 默认色板 `#7a5ce0 / #6a4fd0`、高亮 `#f6c945` 一致）——暖橘在紫底上正好跳出来
 
 ## 五、博主道具（按页面需要取用）
 
@@ -46,16 +45,18 @@
 
 **主体片段（人物本体）：**
 ```
-A cute young East Asian man with tousled dark brown hair and thin black rectangular glasses, calm friendly soft smile, wearing a dark navy zip-up hoodie over a white shirt collar and light grey t-shirt
+A cute young East Asian man with tousled dark brown hair and thin black rectangular glasses, calm friendly soft smile, wearing a coral/salmon short-sleeve t-shirt, with a laptop in front of him, the lid facing the camera showing a small glowing white Apple logo
 ```
 
 **封面整句（留白底图，左侧留白给标题）：**
 ```
-3D clay claymation style horizontal 16:9 banner background. A cute young East Asian man with tousled dark brown hair and thin black rectangular glasses, calm friendly soft smile, wearing a dark navy zip-up hoodie over a white shirt collar and light grey t-shirt, sitting at a desk with a laptop, microphone and a small plant, glowing floating AI chat bubbles around him, placed on the RIGHT third of the frame. The LEFT two-thirds is clean empty soft lavender-purple space reserved for a title to be added later. Cute clouds and a star top-right. Soft matte plasticine texture, rounded handmade forms. NO text anywhere in the image.
+3D clay claymation style horizontal 16:9 banner background. A cute young East Asian man with tousled dark brown hair and thin black rectangular glasses, calm friendly soft smile, wearing a coral/salmon short-sleeve t-shirt, sitting at a desk behind an open laptop with the lid facing the camera showing a small glowing white Apple logo, microphone and a small plant, glowing floating AI chat bubbles around him, placed on the RIGHT third of the frame. The LEFT two-thirds is clean empty soft lavender-purple space reserved for a title to be added later. Cute clouds and a star top-right. Soft matte plasticine texture, rounded handmade forms. NO text anywhere in the image.
 ```
 
 ## 七、注意
 
 - **眼镜是辨识锚点**，每次出图都要带上 `thin black rectangular glasses`。
+- **珊瑚橘短袖 + 笔记本上的 Apple 图标** 是当前形象的另外两个锚点，出图尽量保留。
+- 当前主形象文件：`persona-clay-v2.png`（珊瑚短袖版）；`persona-clay.png` 是早期藏青连帽版，留作备份。
 - 出图**不要透明背景**（imgen 后端不支持，报 400）；要抠图先出白底再用 chroma_cut。
 - 标题文字不进底图（`NO text anywhere`），交给 HTML 叠字。
