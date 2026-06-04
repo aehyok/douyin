@@ -1,22 +1,45 @@
-# AI 少年 · 黏土风人物素材
+# AI 少年 · 固定人物素材
 
-基于本人照片用 `imgen` img2img 生成的 3D 黏土风格角色形象，抠透明后可复用。
+本目录保存 `claude-code-deepseek` 项目的固定人物参考与历史人物素材。
 
-## 文件
+## 当前固定设定
+
+后续本项目所有封面、结尾页、视觉底图、视频帧、人物素材，必须使用同一套人物设定：
+
+- 3D 黏土风格，soft matte plasticine texture。
+- 年轻男性技术博主，正面坐在笔记本电脑前。
+- 深棕/黑色蓬松分束头发。
+- 黑色方框眼镜。
+- 橙色短袖 T 恤。
+- 温和微笑，亲和、干净、科技教程感。
+- 浅紫色背景或同色系柔和背景。
+- 笔记本电脑在前景。
+
+固定参考图文件名：
+
+| 文件 | 说明 |
+|---|---|
+| `reference-fixed.png` | 当前唯一指定的人物参考图：橙色 T 恤、黑框眼镜、坐在笔记本电脑前 |
+
+注意：如果 `reference-fixed.png` 暂时不存在，说明参考图还只是聊天附件，尚未落盘。生成前应先把固定参考图放到这个文件名下。
+
+## 历史文件
 
 | 文件 | 说明 | 尺寸 |
 |---|---|---|
-| `portrait.png` | 正面头像，微笑，透明背景 | 1024×1024 |
-| `waving.png` | 半身挥手，透明背景 | 1024×1024 |
+| `portrait.png` | 早期紫色 hoodie 头像，历史素材，不再作为固定设定 | 1024×1024 |
+| `waving.png` | 早期紫色 hoodie 半身挥手，历史素材，不再作为固定设定 | 1024×1024 |
 
-## 风格参数
+## 生成约束
 
-- **风格**：3D clay claymation，soft matte plasticine
-- **出图工具**：`imgen` (Codex CLI)，`-q high`，img2img 模式（以本人照片为参考）
-- **抠透明**：`chroma_cut.py`（连通域色键，阈值 52）
+- 新图必须以 `reference-fixed.png` 为 img2img / reference image。
+- 不要再生成紫色/蓝色 hoodie 版本。
+- 不要改成其他发型、无眼镜、不同年龄感的人物。
+- 不要把人物改成扁平卡通、写实照片、赛博朋克、二次元等风格。
+- imgen 底图不要放中文正文，准确文字交给 HTML。
 
-## 用途
+参考提示词：
 
-- 演示稿封面/结尾底图（已用于 `claude-code-deepseek/deck/`）
-- 信息页小图标/头像
-- 视频缩略图素材
+```text
+3D clay claymation style, same character as the reference image: a young Chinese male tech creator with dark tousled hair, black square glasses, orange T-shirt, sitting behind a laptop, gentle smile, soft matte plasticine texture, clean tutorial creator look, pale lavender background, horizontal 16:9 composition, leave clean empty space for HTML title overlay, NO text anywhere in the image.
+```

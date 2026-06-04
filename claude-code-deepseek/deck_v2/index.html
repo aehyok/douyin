@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>从零安装 Claude Code · 接入 DeepSeek</title>
+  <link rel="stylesheet" href="style-claymation.css">
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #efe7d6;
+      background-image: radial-gradient(rgba(255, 255, 255, .45) 1px, transparent 1px);
+      background-size: 8px 8px;
+    }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .deck {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      transform-origin: center center;
+    }
+
+    .deck .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .45s ease, transform .45s ease;
+      transform: scale(.985);
+    }
+
+    .deck .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+      z-index: 2;
+    }
+
+    .deck .slide.active .shead {
+      animation: rise .55s .05s both;
+    }
+
+    .deck .slide.active .sbody {
+      animation: rise .6s .18s both;
+    }
+
+    .deck .slide.active .titlebox {
+      animation: rise .6s .12s both;
+    }
+
+    /* ===== 封面 / 结尾（视觉页：imgen 底图 cover 铺满 + HTML 叠字）===== */
+    .slide.cover-slide,
+    .slide.outro-slide {
+      padding: 0;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .slide.cover-slide {
+      background: url("assets/cover-bg.png") center center/cover no-repeat;
+    }
+
+    .slide.outro-slide {
+      background: url("assets/outro-bg.png") center center/cover no-repeat;
+    }
+
+    /* 90deg 水平浅紫/深紫渐变遮罩，把左侧文字区压平，避免边缘色差（坑#4） */
+    .slide.cover-slide::before,
+    .slide.outro-slide::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(90deg, rgba(82, 60, 190, 0.88) 0 42%, rgba(82, 60, 190, 0.45) 58%, transparent 75%);
+    }
+
+    .titlebox {
+      position: relative;
+      z-index: 2;
+      margin-left: 8.5%;
+      max-width: 60%;
+    }
+
+    .bigt {
+      font-size: 102px;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.15;
+      -webkit-text-stroke: 8px #3c2a90;
+      paint-order: stroke fill;
+      text-shadow: 0 8px 0 rgba(40, 25, 110, .5), 0 14px 22px rgba(30, 15, 80, .4);
+    }
+
+    .bigt .c {
+      color: var(--yellow);
+      -webkit-text-stroke: 8px #c98a14;
+    }
+
+    .bigt.s2 {
+      font-size: 78px;
+      margin-top: 12px;
+    }
+
+    .subt {
+      display: inline-block;
+      margin-top: 36px;
+      background: #f483aa;
+      color: #fff;
+      font-size: 40px;
+      font-weight: 800;
+      padding: 16px 42px;
+      border-radius: 26px;
+      border: 4px solid #fff;
+      box-shadow: inset 0 4px 9px rgba(255, 255, 255, .35), 0 12px 20px rgba(60, 40, 140, .35);
+    }
+
+    /* ===== p3 环境检查 ===== */
+    .reqs {
+      display: flex;
+      gap: 48px;
+      align-items: stretch;
+    }
+
+    .reqcard {
+      flex: 1;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 50px 44px;
+    }
+
+    .reqname {
+      font-size: 60px;
+      font-weight: 900;
+      color: var(--ink);
+    }
+
+    .reqbig {
+      font-size: 118px;
+      font-weight: 900;
+      line-height: 1;
+      color: var(--greenD);
+      -webkit-text-stroke: 5px #fff;
+      paint-order: stroke fill;
+    }
+
+    .reqdesc {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--ink2);
+      line-height: 1.4;
+    }
+
+    .osrow {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin: 6px 0;
+    }
+
+    .ospill {
+      font-size: 33px;
+      font-weight: 800;
+      padding: 12px 30px;
+      border-radius: 20px;
+      color: #fff;
+    }
+
+    .ospill.mac {
+      background: linear-gradient(160deg, #74c474, #4fa84f);
+    }
+
+    .ospill.win {
+      background: linear-gradient(160deg, #72a0f2, #4f7fe0);
+    }
+
+    .tip {
+      margin-top: 44px;
+      text-align: center;
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--purpleD);
+    }
+
+    /* ===== p5 CC Switch 下载 ===== */
+    .dl-row {
+      display: flex;
+      gap: 48px;
+    }
+
+    .dlcard {
+      flex: 1;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding: 54px 44px;
+    }
+
+    .dlos {
+      font-size: 58px;
+      font-weight: 900;
+      color: var(--ink);
+    }
+
+    .dlfmt {
+      font-size: 88px;
+      font-weight: 900;
+      color: var(--blueD);
+      -webkit-text-stroke: 4px #fff;
+      paint-order: stroke fill;
+    }
+
+    .dldesc {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--ink2);
+      line-height: 1.4;
+    }
+
+    .dl-flow {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .dl-flow b {
+      color: var(--orangeD);
+    }
+
+    /* ===== p6 接入 DeepSeek 流程 ===== */
+    .flow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px 44px;
+    }
+
+    .fstep {
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      background: var(--cream);
+      border-radius: 30px;
+      padding: 24px 38px;
+      box-shadow: inset 0 5px 11px rgba(255, 255, 255, .8), inset 0 -6px 12px rgba(170, 150, 110, .16), 0 12px 22px rgba(150, 128, 80, .1);
+    }
+
+    .fn {
+      width: 72px;
+      height: 72px;
+      flex: none;
+      border-radius: 50%;
+      background: linear-gradient(160deg, #f483aa, #e05a88);
+      color: #fff;
+      font-size: 38px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 4px 7px rgba(255, 255, 255, .4), 0 8px 14px rgba(200, 70, 120, .3);
+    }
+
+    .ft {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+
+    .ft b {
+      color: var(--pinkD);
+    }
+
+    /* ===== 终端页 outbox 内容 ===== */
+    .verbig {
+      font-size: 128px;
+      line-height: 1;
+      color: var(--greenD);
+      text-align: center;
+      filter: drop-shadow(0 8px 10px rgba(63, 154, 63, .3));
+    }
+
+    .okline {
+      text-align: center;
+      font-size: 40px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.45;
+      margin-top: 18px;
+    }
+
+    .okline b {
+      color: var(--greenD);
+    }
+
+    .term .l.cmd {
+      margin-top: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="stage">
+    <div class="deck">
+
+      <!-- ============ 1 · 封面（视觉页）============ -->
+      <div class="slide cover-slide active" data-bg="#523cbd">
+        <div class="titlebox">
+          <div class="bigt">从零安装 <span class="c">Claude Code</span></div>
+          <div class="bigt s2">接入国产模型 <span class="c">DeepSeek</span></div>
+          <div><span class="subt">手把手教程 · 4 步搞定 · AI 少年</span></div>
+        </div>
+      </div>
+
+      <!-- ============ 2 · 4 步总览（信息页）============ -->
+      <div class="slide">
+        <div class="shead">
+          <div class="badge b-purple">▶</div>
+          <div class="htitle t-purple">本期 4 步搞定</div>
+        </div>
+        <div class="sbody">
+          <div class="steps">
+            <div class="steprow"><img src="assets/icon-install.png" alt="">
+              <div class="stitle">① 安装 Claude Code</div>
+              <div class="sdesc">检查 Node.js & Git<br>一键安装 + 验证版本号</div>
+            </div>
+            <div class="steprow"><img src="assets/icon-switch.png" alt="">
+              <div class="stitle">② 准备 CC Switch</div>
+              <div class="sdesc">Windows 用 MSI / Mac 用 DMG<br>轻量化管理客户端</div>
+            </div>
+            <div class="steprow"><img src="assets/icon-whale.png" alt="">
+              <div class="stitle">③ 接入 DeepSeek</div>
+              <div class="sdesc">创建并填入 API Key<br>启用 DeepSeek 高性价比模型</div>
+            </div>
+            <div class="steprow"><img src="assets/icon-verify.png" alt="">
+              <div class="stitle">④ 验证对接</div>
+              <div class="sdesc">重开终端 → 提问反问<br>完美体验极速响应</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 3 · 第一步 环境检查（信息页）============ -->
+      <div class="slide">
+        <div class="shead">
+          <div class="badge b-purple">1</div>
+          <div class="htitle t-purple">第一步 · 环境检查</div>
+        </div>
+        <div class="sbody">
+          <div class="reqs">
+            <div class="claycard reqcard">
+              <div class="reqname">Node.js</div>
+              <div class="reqbig">≥ 18</div>
+              <div class="reqdesc">低于版本 18<br>Claude Code 将无法运行</div>
+            </div>
+            <div class="claycard reqcard">
+              <div class="reqname">Git</div>
+              <div class="osrow">
+                <span class="ospill mac">macOS 自带 ✓ 无需装</span>
+                <span class="ospill win">Windows 需手动安装</span>
+              </div>
+              <div class="reqdesc">Claude Code 运行深度依赖 Git</div>
+            </div>
+          </div>
+          <div class="tip">建议使用 WorkBuddy，提供全开权限运行，会自动帮你检查这两项 ✓</div>
+        </div>
+      </div>
+
+      <!-- ============ 4 · 第一步 安装 & 验证（终端页）============ -->
+      <div class="slide">
+        <div class="shead">
+          <div class="badge b-purple">1</div>
+          <div class="htitle t-purple">一键安装 & 验证版本</div>
+        </div>
+        <div class="sbody">
+          <div class="term-wrap">
+            <div class="term">
+              <div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i
+                  style="background:#28c840"></i></div>
+              <div class="l"><span class="p">›</span> 运行 WorkBuddy 自动化检查环境</div>
+              <div class="l g">✓ Node.js ≥ 18 检测成功</div>
+              <div class="l g">✓ Git 依赖检测成功</div>
+              <div class="l y">⬇ 正在全局安装 Claude Code...</div>
+              <div class="progress"><i></i></div>
+              <div class="l cmd"><span class="p">$</span> npm install -g @anthropic-ai/claude-code</div>
+              <div class="l cmd"><span class="p">$</span> claude --version</div>
+            </div>
+            <div class="arrow-r">➜</div>
+            <div class="outbox">
+              <div class="verbig">✓</div>
+              <div class="okline">版本号验证成功！<br><b>第一步安装搞定</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 5 · 第二步 CC Switch（信息页）============ -->
+      <div class="slide">
+        <div class="shead">
+          <div class="badge b-blue">2</div>
+          <div class="htitle t-blue">第二步 · CC Switch 客户端准备</div>
+        </div>
+        <div class="sbody">
+          <div class="dl-row">
+            <div class="claycard dlcard">
+              <div class="dlos">Windows</div>
+              <div class="dlfmt">.MSI</div>
+              <div class="dldesc">双击 MSI 安装包<br>一键安装，极速完成部署</div>
+            </div>
+            <div class="claycard dlcard">
+              <div class="dlos">macOS</div>
+              <div class="dlfmt">.DMG</div>
+              <div class="dldesc">双击 DMG 磁盘镜像<br>拖拽入 Applications 即可使用</div>
+            </div>
+          </div>
+          <div class="dl-flow">CC Switch 体积仅约 <b>25MB</b>，是专为切换 Claude Code 模型设计的轻量可视化工具 💡</div>
+        </div>
+      </div>
+
+      <!-- ============ 6 · 第三步 接入 DeepSeek（信息页）============ -->
+      <div class="slide">
+        <div class="shead">
+          <div class="badge b-pink">3</div>
+          <div class="htitle t-pink">第三步 · 接入 DeepSeek Key</div>
+        </div>
+        <div class="sbody">
+          <div class="flow">
+            <div class="fstep">
+              <div class="fn">1</div>
+              <div class="ft">点击「新增」→ 选择 <b>DeepSeek</b> 厂商</div>
+            </div>
+            <div class="fstep">
+              <div class="fn">2</div>
+              <div class="ft">点击链接进入 <b>API 开放平台</b> 创建 Key</div>
+            </div>
+            <div class="fstep">
+              <div class="fn">3</div>
+              <div class="ft">进行账号 <b>充值</b>（需确保账户内有余额）</div>
+            </div>
+            <div class="fstep">
+              <div class="fn">4</div>
+              <div class="ft">创建 API Key（推荐备注 "ClaudeCode"）</div>
+            </div>
+            <div class="fstep">
+              <div class="fn">5</div>
+              <div class="ft">复制 Key 粘回 CC Switch，点击 <b>添加</b></div>
+            </div>
+            <div class="fstep">
+              <div class="fn">6</div>
+              <div class="ft">最后勾选 <b>启用</b>，作为当前激活配置 ✓</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 7 · 第四步 验证对接（终端页）============ -->
+      <div class="slide">
+        <div class="shead">
+          <div class="badge b-green">4</div>
+          <div class="htitle t-green">第四步 · 验证对接成功</div>
+        </div>
+        <div class="sbody">
+          <div class="term-wrap">
+            <div class="term">
+              <div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i
+                  style="background:#28c840"></i></div>
+              <div class="l y">⟳ 关掉终端并重新打开（以重新加载新配置）</div>
+              <div class="l cmd"><span class="p">$</span> claude</div>
+              <div class="l g">✓ 信任当前目录并初始化成功</div>
+              <div class="l"><span class="p">你：</span>你是什么大模型？</div>
+              <div class="l g">› 我是一个由中国科技公司深度求索（DeepSeek）开发的语言模型。</div>
+            </div>
+            <div class="arrow-r">➜</div>
+            <div class="outbox">
+              <img src="assets/icon-whale.png" alt=""
+                style="width:150px;margin:0 auto 16px;display:block;filter:drop-shadow(0 8px 12px rgba(0,0,0,.18))">
+              <div class="okline"><b>DeepSeek</b> 成功接入<br>4 步流程全部打通 🎉</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 8 · 结尾（视觉页）============ -->
+      <div class="slide outro-slide" data-bg="#523cbd">
+        <div class="titlebox">
+          <div class="bigt">学起来<br><span class="c">试试看</span></div>
+          <div><span class="subt">关注 AI 少年 · 带你玩转 AI 👋</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <script src="assets/fit.js"></script>
+  <script>
+    var S = [].slice.call(document.querySelectorAll('.slide')), i = 0, B = document.body, D = document.querySelector('.deck');
+    function paintBg(s) {
+      var c = s.getAttribute('data-bg');
+      if (c) {
+        B.style.background = c;
+      } else {
+        B.style.background = '#efe7d6';
+        B.style.backgroundImage = 'radial-gradient(rgba(255,255,255,.45) 1px,transparent 1px)';
+        B.style.backgroundSize = '8px 8px';
+      }
+    }
+    function fit() {
+      var s = S[i], rw = window.innerWidth / 1920, rh = window.innerHeight / 1080;
+      var full = s.classList.contains('cover-slide') || s.classList.contains('outro-slide');
+      var k = full ? Math.max(rw, rh) : Math.min(rw, rh);
+      D.style.transform = 'scale(' + k.toFixed(4) + ')';
+    }
+    function show(n) { i = (n + S.length) % S.length; S.forEach(function (s, k) { s.classList.toggle('active', k === i); }); paintBg(S[i]); fit(); }
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { show(i + 1); e.preventDefault(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { show(i - 1); e.preventDefault(); }
+    });
+    document.querySelector('.stage').addEventListener('click', function (e) {
+      if (e.clientX < window.innerWidth * 0.25) show(i - 1); else show(i + 1);
+    });
+    window.addEventListener('resize', fit); window.addEventListener('load', fit);
+    var start = parseInt((location.hash || '').slice(1)) || 1; show(start - 1); fit();
+  </script>
+</body>
+
+</html>

@@ -39,15 +39,45 @@
       left: 0;
       opacity: 0;
       visibility: hidden;
-      transition: opacity .45s ease, transform .45s ease;
-      transform: scale(.985)
+      pointer-events: none;
+      transform: scale(.985);
+      will-change: transform, opacity
     }
 
     .deck .slide.active {
       opacity: 1;
       visibility: visible;
+      pointer-events: auto;
       transform: scale(1);
       z-index: 2
+    }
+
+    .deck .slide.entering {
+      visibility: visible;
+      z-index: 3
+    }
+
+    .deck .slide.exiting {
+      opacity: 1;
+      visibility: visible;
+      z-index: 1;
+      pointer-events: none
+    }
+
+    .deck .slide.entering.direction-forward {
+      animation: slideInForward .72s cubic-bezier(.18, .9, .22, 1) both
+    }
+
+    .deck .slide.exiting.direction-forward {
+      animation: slideOutForward .72s cubic-bezier(.18, .9, .22, 1) both
+    }
+
+    .deck .slide.entering.direction-backward {
+      animation: slideInBackward .72s cubic-bezier(.18, .9, .22, 1) both
+    }
+
+    .deck .slide.exiting.direction-backward {
+      animation: slideOutBackward .72s cubic-bezier(.18, .9, .22, 1) both
     }
 
     .deck .slide.active .shead {
@@ -60,6 +90,189 @@
 
     .deck .slide.active .titlebox {
       animation: rise .6s .12s both
+    }
+
+    .deck .slide.active.cover-slide,
+    .deck .slide.active.outro-slide {
+      animation-name: slideInForward, bgBreathe;
+      animation-duration: .72s, 7s;
+      animation-timing-function: cubic-bezier(.18, .9, .22, 1), ease-in-out;
+      animation-fill-mode: both, both
+    }
+
+    .deck .slide.active.cover-slide.direction-backward,
+    .deck .slide.active.outro-slide.direction-backward {
+      animation-name: slideInBackward, bgBreathe
+    }
+
+    .slide.active.cover-slide::before,
+    .slide.active.outro-slide::before {
+      animation: veilSweep 1.1s .12s cubic-bezier(.2, .8, .2, 1) both
+    }
+
+    .slide.active .bigt {
+      animation: titleDrop .68s .18s cubic-bezier(.2, .9, .18, 1.18) both
+    }
+
+    .slide.active .bigt.s2 {
+      animation-delay: .28s
+    }
+
+    .slide.active .subt {
+      animation: stickerPop .62s .48s cubic-bezier(.16, 1, .22, 1.18) both
+    }
+
+    .slide.active .steprow {
+      animation: cardMarch .54s cubic-bezier(.18, .85, .24, 1) both
+    }
+
+    .slide.active .steprow:nth-child(1) {
+      animation-delay: .12s
+    }
+
+    .slide.active .steprow:nth-child(2) {
+      animation-delay: .22s
+    }
+
+    .slide.active .steprow:nth-child(3) {
+      animation-delay: .32s
+    }
+
+    .slide.active .steprow:nth-child(4) {
+      animation-delay: .42s
+    }
+
+    .slide.active .steprow img {
+      animation: iconWiggle .78s .46s cubic-bezier(.16, .9, .2, 1.25) both
+    }
+
+    .slide.active .reqcard,
+    .slide.active .dlcard {
+      animation: clayPop .62s cubic-bezier(.17, .95, .24, 1.16) both
+    }
+
+    .slide.active .reqcard:nth-child(1),
+    .slide.active .dlcard:nth-child(1) {
+      animation-delay: .14s
+    }
+
+    .slide.active .reqcard:nth-child(2),
+    .slide.active .dlcard:nth-child(2) {
+      animation-delay: .27s
+    }
+
+    .slide.active .reqbig,
+    .slide.active .dlfmt {
+      animation: numberBounce .62s .42s cubic-bezier(.16, .9, .2, 1.25) both
+    }
+
+    .slide.active .ospill {
+      animation: pillSlide .48s cubic-bezier(.18, .8, .25, 1) both
+    }
+
+    .slide.active .ospill:nth-child(1) {
+      animation-delay: .46s
+    }
+
+    .slide.active .ospill:nth-child(2) {
+      animation-delay: .56s
+    }
+
+    .slide.active .tip {
+      animation: underlineLift .58s .68s ease both
+    }
+
+    .slide.active .term {
+      animation: terminalOpen .62s .14s cubic-bezier(.18, .85, .24, 1) both
+    }
+
+    .slide.active .term .dots i {
+      animation: lightPop .42s cubic-bezier(.18, .9, .2, 1.2) both
+    }
+
+    .slide.active .term .dots i:nth-child(1) {
+      animation-delay: .36s
+    }
+
+    .slide.active .term .dots i:nth-child(2) {
+      animation-delay: .44s
+    }
+
+    .slide.active .term .dots i:nth-child(3) {
+      animation-delay: .52s
+    }
+
+    .slide.active .term .l {
+      animation: terminalLine .38s ease both
+    }
+
+    .slide.active .term .l:nth-of-type(1) {
+      animation-delay: .50s
+    }
+
+    .slide.active .term .l:nth-of-type(2) {
+      animation-delay: .62s
+    }
+
+    .slide.active .term .l:nth-of-type(3) {
+      animation-delay: .74s
+    }
+
+    .slide.active .term .l:nth-of-type(4) {
+      animation-delay: .86s
+    }
+
+    .slide.active .term .l:nth-of-type(5) {
+      animation-delay: .98s
+    }
+
+    .slide.active .progress {
+      animation: progressReveal .48s 1.02s ease both
+    }
+
+    .slide.active .arrow-r {
+      animation: arrowKick .52s 1.08s cubic-bezier(.18, .85, .24, 1.18) both
+    }
+
+    .slide.active .outbox {
+      animation: resultPop .62s 1.2s cubic-bezier(.18, .85, .24, 1.16) both
+    }
+
+    .slide.active .verbig,
+    .slide.active .outbox img {
+      animation: successPulse .8s 1.54s ease both
+    }
+
+    .slide.active .fstep {
+      animation: flowStep .5s cubic-bezier(.18, .85, .24, 1) both
+    }
+
+    .slide.active .fstep:nth-child(1) {
+      animation-delay: .14s
+    }
+
+    .slide.active .fstep:nth-child(2) {
+      animation-delay: .22s
+    }
+
+    .slide.active .fstep:nth-child(3) {
+      animation-delay: .30s
+    }
+
+    .slide.active .fstep:nth-child(4) {
+      animation-delay: .38s
+    }
+
+    .slide.active .fstep:nth-child(5) {
+      animation-delay: .46s
+    }
+
+    .slide.active .fstep:nth-child(6) {
+      animation-delay: .54s
+    }
+
+    .slide.active .fn {
+      animation: dialSpin .58s .36s cubic-bezier(.18, .9, .2, 1.18) both
     }
 
     /* ===== 封面 / 结尾（视觉页：imgen 底图 cover 铺满 + HTML 叠字）===== */
@@ -324,11 +537,328 @@
     .term .l.cmd {
       margin-top: 6px
     }
+
+    @keyframes slideInForward {
+      from {
+        opacity: 0;
+        transform: translateX(120px) scale(.965) rotate(.4deg)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0) scale(1) rotate(0)
+      }
+    }
+
+    @keyframes slideOutForward {
+      from {
+        opacity: 1;
+        transform: translateX(0) scale(1) rotate(0)
+      }
+
+      to {
+        opacity: 0;
+        transform: translateX(-92px) scale(.975) rotate(-.25deg)
+      }
+    }
+
+    @keyframes slideInBackward {
+      from {
+        opacity: 0;
+        transform: translateX(-120px) scale(.965) rotate(-.4deg)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0) scale(1) rotate(0)
+      }
+    }
+
+    @keyframes slideOutBackward {
+      from {
+        opacity: 1;
+        transform: translateX(0) scale(1) rotate(0)
+      }
+
+      to {
+        opacity: 0;
+        transform: translateX(92px) scale(.975) rotate(.25deg)
+      }
+    }
+
+    @keyframes bgBreathe {
+      0% {
+        background-size: 103% auto
+      }
+
+      100% {
+        background-size: 106% auto
+      }
+    }
+
+    @keyframes veilSweep {
+      from {
+        opacity: .55;
+        transform: translateX(-7%)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
+
+    @keyframes titleDrop {
+      from {
+        opacity: 0;
+        transform: translateY(-34px) rotate(-1.2deg)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) rotate(0)
+      }
+    }
+
+    @keyframes stickerPop {
+      from {
+        opacity: 0;
+        transform: translateY(26px) scale(.82) rotate(-2deg)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotate(0)
+      }
+    }
+
+    @keyframes cardMarch {
+      from {
+        opacity: 0;
+        transform: translateX(68px) scale(.96)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0) scale(1)
+      }
+    }
+
+    @keyframes iconWiggle {
+      0% {
+        transform: rotate(-7deg) scale(.88)
+      }
+
+      62% {
+        transform: rotate(4deg) scale(1.08)
+      }
+
+      100% {
+        transform: rotate(0) scale(1)
+      }
+    }
+
+    @keyframes clayPop {
+      from {
+        opacity: 0;
+        transform: translateY(46px) scale(.9)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1)
+      }
+    }
+
+    @keyframes numberBounce {
+      0% {
+        transform: scale(.72)
+      }
+
+      62% {
+        transform: scale(1.12)
+      }
+
+      100% {
+        transform: scale(1)
+      }
+    }
+
+    @keyframes pillSlide {
+      from {
+        opacity: 0;
+        transform: translateX(-24px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
+
+    @keyframes underlineLift {
+      from {
+        opacity: 0;
+        transform: translateY(24px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes terminalOpen {
+      from {
+        opacity: 0;
+        transform: translateY(38px) scale(.96);
+        clip-path: inset(0 0 92% 0 round 34px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        clip-path: inset(0 0 0 0 round 34px)
+      }
+    }
+
+    @keyframes lightPop {
+      from {
+        transform: scale(0);
+        opacity: 0
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1
+      }
+    }
+
+    @keyframes terminalLine {
+      from {
+        opacity: 0;
+        transform: translateX(-18px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
+
+    @keyframes progressReveal {
+      from {
+        opacity: 0;
+        transform: scaleX(.25);
+        transform-origin: left center
+      }
+
+      to {
+        opacity: 1;
+        transform: scaleX(1);
+        transform-origin: left center
+      }
+    }
+
+    @keyframes arrowKick {
+      from {
+        opacity: 0;
+        transform: translateX(-36px) scale(.72)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0) scale(1)
+      }
+    }
+
+    @keyframes resultPop {
+      from {
+        opacity: 0;
+        transform: translateX(42px) scale(.9)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0) scale(1)
+      }
+    }
+
+    @keyframes successPulse {
+      0% {
+        transform: scale(.82) rotate(-3deg)
+      }
+
+      55% {
+        transform: scale(1.11) rotate(2deg)
+      }
+
+      100% {
+        transform: scale(1) rotate(0)
+      }
+    }
+
+    @keyframes flowStep {
+      from {
+        opacity: 0;
+        transform: translateY(32px) scale(.94)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1)
+      }
+    }
+
+    @keyframes dialSpin {
+      from {
+        transform: rotate(-18deg) scale(.76)
+      }
+
+      to {
+        transform: rotate(0) scale(1)
+      }
+    }
+
+    .slide.active .term .l:nth-child(2) {
+      animation-delay: .50s
+    }
+
+    .slide.active .term .l:nth-child(3) {
+      animation-delay: .62s
+    }
+
+    .slide.active .term .l:nth-child(4) {
+      animation-delay: .74s
+    }
+
+    .slide.active .term .l:nth-child(5) {
+      animation-delay: .86s
+    }
+
+    .slide.active .term .l:nth-child(7) {
+      animation-delay: 1.04s
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .deck .slide,
+      .deck .slide.active,
+      .deck .slide.entering,
+      .deck .slide.exiting,
+      .slide.active *,
+      .slide.active::before {
+        animation-duration: .01ms !important;
+        animation-delay: 0ms !important;
+        animation-iteration-count: 1 !important
+      }
+    }
   </style>
 </head>
 
 <body>
-  <div class="stage">
+  <div class="stage" id="root" data-composition-id="claude-code-deepseek" data-start="0" data-duration="8"
+    data-width="1920" data-height="1080">
     <div class="deck">
 
       <!-- ============ 1 · 封面（视觉页）============ -->
@@ -519,6 +1049,16 @@
   </div>
   <script>
     var S = [].slice.call(document.querySelectorAll('.slide')), i = 0, B = document.body, D = document.querySelector('.deck');
+    var animTimer = 0;
+    window.__timelines = window.__timelines || {};
+    window.__timelines["claude-code-deepseek"] = {
+      duration: function () { return 8; },
+      time: function () { return 0; },
+      pause: function () { },
+      play: function () { },
+      seek: function () { return 0; },
+      totalTime: function () { return 0; }
+    };
     function paintBg(s) {
       var c = s.getAttribute('data-bg');
       if (c) { B.style.background = c; }                 // 满版图页：万一极端比例露边，外围底色兜底
@@ -535,16 +1075,45 @@
       var k = full ? Math.max(rw, rh) : Math.min(rw, rh);
       D.style.transform = 'scale(' + k.toFixed(4) + ')';
     }
-    function show(n) { i = (n + S.length) % S.length; S.forEach(function (s, k) { s.classList.toggle('active', k === i); }); paintBg(S[i]); fit(); }
+    function cleanMotionClasses(s) {
+      s.classList.remove('entering', 'exiting', 'direction-forward', 'direction-backward');
+    }
+    function show(n, animate) {
+      var prev = i;
+      var next = (n + S.length) % S.length;
+      var dir = (n < prev && !(prev === S.length - 1 && next === 0)) || (prev === 0 && next === S.length - 1) ? 'backward' : 'forward';
+      var oldSlide = S[prev], newSlide = S[next];
+
+      if (animTimer) clearTimeout(animTimer);
+      S.forEach(function (s) { cleanMotionClasses(s); });
+
+      i = next;
+      paintBg(newSlide);
+      fit();
+
+      if (!animate || oldSlide === newSlide) {
+        S.forEach(function (s, k) { s.classList.toggle('active', k === i); });
+        return;
+      }
+
+      oldSlide.classList.remove('active');
+      oldSlide.classList.add('exiting', 'direction-' + dir);
+      newSlide.classList.add('active', 'entering', 'direction-' + dir);
+
+      animTimer = setTimeout(function () {
+        oldSlide.classList.remove('exiting', 'direction-' + dir);
+        newSlide.classList.remove('entering');
+      }, 760);
+    }
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { show(i + 1); e.preventDefault(); }
-      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { show(i - 1); e.preventDefault(); }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { show(i + 1, true); e.preventDefault(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { show(i - 1, true); e.preventDefault(); }
     });
     document.querySelector('.stage').addEventListener('click', function (e) {
-      if (e.clientX < window.innerWidth * 0.25) show(i - 1); else show(i + 1);
+      if (e.clientX < window.innerWidth * 0.25) show(i - 1, true); else show(i + 1, true);
     });
     window.addEventListener('resize', fit); window.addEventListener('load', fit);
-    var start = parseInt((location.hash || '').slice(1)) || 1; show(start - 1); fit();
+    var start = parseInt((location.hash || '').slice(1)) || 1; show(start - 1, false); fit();
   </script>
 </body>
 

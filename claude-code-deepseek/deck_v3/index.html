@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>从零安装 Claude Code 并接入 DeepSeek</title>
+  <link rel="stylesheet" href="style-claymation.css">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #f1ecd9;
+      background-image: radial-gradient(rgba(255,255,255,.5) 1px, transparent 1px);
+      background-size: 8px 8px;
+    }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .deck {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      transform-origin: center center;
+    }
+
+    .deck .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .45s ease, transform .45s ease;
+      transform: scale(.985);
+    }
+
+    .deck .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+      z-index: 2;
+    }
+
+    .deck .slide.active .shead,
+    .deck .slide.active .sbody,
+    .deck .slide.active .titlebox {
+      animation: rise .58s .08s both;
+    }
+
+    .cover-slide,
+    .outro-slide {
+      padding: 0;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .cover-slide { background-image: url("assets/cover-bg.png"); }
+    .outro-slide { background-image: url("assets/outro-bg.png"); }
+
+    .cover-slide::before,
+    .outro-slide::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(90deg, rgba(243,239,219,.94) 0 43%, rgba(243,239,219,.62) 58%, transparent 76%);
+    }
+
+    .titlebox {
+      position: relative;
+      z-index: 2;
+      margin-left: 8.5%;
+      max-width: 56%;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 18px;
+      padding: 14px 28px;
+      border-radius: 999px;
+      background: #243c5a;
+      color: #fff;
+      font-size: 34px;
+      font-weight: 900;
+      box-shadow: 0 12px 20px rgba(36,60,90,.24), inset 0 4px 8px rgba(255,255,255,.22);
+    }
+
+    .main-title {
+      margin-top: 34px;
+      font-size: 112px;
+      line-height: 1.08;
+      font-weight: 900;
+      color: #2d3f50;
+      -webkit-text-stroke: 8px #fffdf3;
+      paint-order: stroke fill;
+      text-shadow: 0 8px 0 rgba(82,121,126,.18), 0 15px 24px rgba(52,78,86,.20);
+    }
+
+    .main-title .hot {
+      color: #28a284;
+      -webkit-text-stroke-color: #f7fff4;
+    }
+
+    .cover-sub {
+      display: inline-block;
+      margin-top: 40px;
+      padding: 18px 38px;
+      border-radius: 26px;
+      background: #f4a33f;
+      color: #fff;
+      font-size: 40px;
+      font-weight: 900;
+      border: 4px solid #fff8e8;
+      box-shadow: 0 12px 20px rgba(188,118,38,.25), inset 0 5px 10px rgba(255,255,255,.28);
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 28px;
+    }
+
+    .step-card {
+      min-height: 560px;
+      padding: 42px 32px;
+      border-radius: 34px;
+      background: var(--cream);
+      box-shadow: inset 0 5px 12px rgba(255,255,255,.8), inset 0 -8px 16px rgba(170,150,110,.16), 0 16px 30px rgba(150,128,80,.14);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 26px;
+    }
+
+    .step-num {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 48px;
+      font-weight: 900;
+      box-shadow: 0 12px 22px rgba(0,0,0,.16), inset 0 6px 9px rgba(255,255,255,.42);
+    }
+
+    .step-card:nth-child(1) .step-num { background: linear-gradient(160deg,#66b979,#36976a); }
+    .step-card:nth-child(2) .step-num { background: linear-gradient(160deg,#64a8e8,#427ecf); }
+    .step-card:nth-child(3) .step-num { background: linear-gradient(160deg,#f3b24c,#dd8830); }
+    .step-card:nth-child(4) .step-num { background: linear-gradient(160deg,#ed6f9b,#cd4d7a); }
+
+    .step-title {
+      font-size: 48px;
+      font-weight: 900;
+      line-height: 1.12;
+      color: var(--ink);
+    }
+
+    .step-desc {
+      font-size: 30px;
+      font-weight: 750;
+      line-height: 1.4;
+      color: var(--ink2);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 46px;
+      align-items: stretch;
+    }
+
+    .panel {
+      border-radius: 36px;
+      background: var(--cream);
+      padding: 44px 48px;
+      box-shadow: inset 0 5px 12px rgba(255,255,255,.82), inset 0 -8px 16px rgba(170,150,110,.15), 0 16px 30px rgba(150,128,80,.12);
+    }
+
+    .panel-title {
+      font-size: 46px;
+      font-weight: 900;
+      color: var(--ink);
+      margin-bottom: 26px;
+    }
+
+    .check-list {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .check {
+      display: flex;
+      align-items: flex-start;
+      gap: 22px;
+      font-size: 34px;
+      line-height: 1.36;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .check::before {
+      content: "✓";
+      flex: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      background: #42a66d;
+      font-size: 30px;
+      box-shadow: inset 0 4px 7px rgba(255,255,255,.32), 0 8px 14px rgba(66,166,109,.22);
+    }
+
+    .terminal {
+      background: #232735;
+      color: #e9edf5;
+      border-radius: 34px;
+      padding: 42px 48px;
+      font-family: "SF Mono", Consolas, monospace;
+      box-shadow: 0 18px 34px rgba(0,0,0,.28);
+    }
+
+    .dots {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 30px;
+    }
+
+    .dots i {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: block;
+    }
+
+    .dots i:nth-child(1) { background: #ff6b6b; }
+    .dots i:nth-child(2) { background: #ffd166; }
+    .dots i:nth-child(3) { background: #5fd18c; }
+
+    .cmd {
+      font-size: 39px;
+      line-height: 1.55;
+      font-weight: 800;
+      white-space: pre-line;
+    }
+
+    .cmd .green { color: #79d98a; }
+    .cmd .yellow { color: #f9c74f; }
+    .cmd .blue { color: #8bb8ff; }
+
+    .download-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 42px;
+    }
+
+    .download-card {
+      min-height: 500px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+    }
+
+    .os {
+      font-size: 62px;
+      font-weight: 900;
+      color: var(--ink);
+    }
+
+    .pkg {
+      min-width: 240px;
+      padding: 24px 40px;
+      border-radius: 30px;
+      background: #fff9ea;
+      color: #4078bd;
+      font-size: 86px;
+      font-weight: 900;
+      border: 6px solid #fff;
+      box-shadow: 0 12px 22px rgba(70,108,160,.15), inset 0 4px 9px rgba(255,255,255,.8);
+    }
+
+    .muted {
+      font-size: 32px;
+      line-height: 1.36;
+      font-weight: 750;
+      color: var(--ink2);
+    }
+
+    .key-flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .flow-card {
+      min-height: 480px;
+      padding: 38px 30px;
+      border-radius: 34px;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 24px;
+      box-shadow: inset 0 5px 12px rgba(255,255,255,.82), inset 0 -8px 16px rgba(170,150,110,.14), 0 14px 26px rgba(150,128,80,.12);
+    }
+
+    .flow-icon {
+      width: 116px;
+      height: 116px;
+      border-radius: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #243c5a;
+      color: #fff;
+      font-size: 60px;
+      font-weight: 900;
+      box-shadow: inset 0 5px 9px rgba(255,255,255,.24), 0 12px 22px rgba(36,60,90,.20);
+    }
+
+    .flow-title {
+      font-size: 40px;
+      font-weight: 900;
+      color: var(--ink);
+      line-height: 1.18;
+    }
+
+    .flow-desc {
+      font-size: 29px;
+      line-height: 1.34;
+      font-weight: 740;
+      color: var(--ink2);
+    }
+
+    .chat {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .bubble {
+      max-width: 78%;
+      padding: 24px 32px;
+      border-radius: 28px;
+      font-size: 38px;
+      line-height: 1.32;
+      font-weight: 820;
+      box-shadow: 0 12px 22px rgba(0,0,0,.10), inset 0 4px 8px rgba(255,255,255,.42);
+    }
+
+    .bubble.user {
+      align-self: flex-end;
+      color: #fff;
+      background: #4f8ddb;
+      border-bottom-right-radius: 10px;
+    }
+
+    .bubble.ai {
+      align-self: flex-start;
+      color: var(--ink);
+      background: #fff9ea;
+      border-bottom-left-radius: 10px;
+    }
+
+    .result-strip {
+      margin-top: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 28px 34px;
+      border-radius: 30px;
+      background: #dff5e7;
+      color: #2b8554;
+      font-size: 44px;
+      font-weight: 900;
+    }
+
+    .outro-slide::before {
+      background: linear-gradient(90deg, rgba(240,248,245,.95) 0 42%, rgba(240,248,245,.62) 58%, transparent 76%);
+    }
+  </style>
+</head>
+<body>
+<div class="stage"><div class="deck">
+
+  <section class="slide cover-slide active">
+    <div class="titlebox">
+      <div class="eyebrow">AI 少年 · 手把手教程</div>
+      <h1 class="main-title">从零安装<br><span class="hot">Claude Code</span><br>接入 DeepSeek</h1>
+      <div class="cover-sub">4 步完成：安装、切换、填 Key、验证</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="shead">
+      <div class="badge b-green">4</div>
+      <h2 class="htitle t-green">本期流程：照着这 4 步走</h2>
+    </div>
+    <div class="sbody">
+      <div class="overview-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-title">安装<br>Claude Code</div>
+          <div class="step-desc">先检查 Node.js 和 Git，再安装并确认版本号。</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-title">配置<br>CC Switch</div>
+          <div class="step-desc">Windows 下载 MSI，Mac 下载 DMG，安装后打开。</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-title">接入<br>DeepSeek</div>
+          <div class="step-desc">选择 DeepSeek，创建 API Key，复制回工具并启用。</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <div class="step-title">验证<br>对接结果</div>
+          <div class="step-desc">重开终端，输入 claude，确认模型能正常响应。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="shead">
+      <div class="badge b-blue">1</div>
+      <h2 class="htitle t-blue">安装前先看环境：Node.js + Git</h2>
+    </div>
+    <div class="sbody">
+      <div class="split">
+        <div class="panel">
+          <div class="panel-title">必须检查</div>
+          <div class="check-list">
+            <div class="check">Node.js 最低版本是 18，低于 18 会跑不起来。</div>
+            <div class="check">Mac 通常自带 Git，可以先跳过。</div>
+            <div class="check">Windows 可能没有 Git，需要单独安装。</div>
+          </div>
+        </div>
+        <div class="terminal">
+          <div class="dots"><i></i><i></i><i></i></div>
+          <div class="cmd"><span class="blue">$</span> node -v
+<span class="green">v18.x 或更高</span>
+
+<span class="blue">$</span> git --version
+<span class="green">git version ...</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="shead">
+      <div class="badge b-purple">2</div>
+      <h2 class="htitle t-purple">安装 Claude Code：装完立刻验证</h2>
+    </div>
+    <div class="sbody">
+      <div class="split">
+        <div class="terminal">
+          <div class="dots"><i></i><i></i><i></i></div>
+          <div class="cmd"><span class="blue">$</span> 按教程执行安装命令
+
+<span class="blue">$</span> 验证版本号
+<span class="green">版本号验证完毕</span>
+
+<span class="blue">$</span> claude
+<span class="yellow">进入 Claude Code</span></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">口播重点</div>
+          <div class="check-list">
+            <div class="check">装完先看版本号，不要直接进入下一步。</div>
+            <div class="check">Windows 用户可以用 cmd 或 PowerShell 输入命令。</div>
+            <div class="check">遇到报错，截图给 AI，让它按错误信息继续处理。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="shead">
+      <div class="badge b-orange">3</div>
+      <h2 class="htitle t-orange">CC Switch：按系统下载对应安装包</h2>
+    </div>
+    <div class="sbody">
+      <div class="download-cards">
+        <div class="panel download-card">
+          <div class="os">Windows</div>
+          <div class="pkg">MSI</div>
+          <div class="muted">直接下载安装包，双击安装。</div>
+        </div>
+        <div class="panel download-card">
+          <div class="os">Mac</div>
+          <div class="pkg">DMG</div>
+          <div class="muted">下载后打开，拖入应用并启动。</div>
+        </div>
+      </div>
+      <div class="tip">字幕里提到安装包约 25MB，安装很快，打开后进入配置 DeepSeek。</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="shead">
+      <div class="badge b-pink">4</div>
+      <h2 class="htitle t-pink">接入 DeepSeek：创建 API Key 并启用</h2>
+    </div>
+    <div class="sbody">
+      <div class="key-flow">
+        <div class="flow-card">
+          <div class="flow-icon">+</div>
+          <div class="flow-title">新增配置</div>
+          <div class="flow-desc">在 CC Switch 中点击新增，选择 DeepSeek。</div>
+        </div>
+        <div class="flow-card">
+          <div class="flow-icon">¥</div>
+          <div class="flow-title">确认余额</div>
+          <div class="flow-desc">字幕里提醒：开放平台需要先充值。</div>
+        </div>
+        <div class="flow-card">
+          <div class="flow-icon">KEY</div>
+          <div class="flow-title">创建 Key</div>
+          <div class="flow-desc">API Keys 创建一个，专门给 Claude Code 使用。</div>
+        </div>
+        <div class="flow-card">
+          <div class="flow-icon">ON</div>
+          <div class="flow-title">复制并启用</div>
+          <div class="flow-desc">复制回 CC Switch，点击添加，然后启用。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="shead">
+      <div class="badge b-green">✓</div>
+      <h2 class="htitle t-green">最后验证：重开终端再问一次模型</h2>
+    </div>
+    <div class="sbody">
+      <div class="split">
+        <div class="terminal">
+          <div class="dots"><i></i><i></i><i></i></div>
+          <div class="cmd"><span class="blue">$</span> claude
+<span class="yellow">信任当前目录</span>
+
+<span class="blue">你：</span> 你好
+<span class="green">AI：</span> OK
+
+<span class="blue">你：</span> 你是什么大模型？
+<span class="green">AI：</span> DeepSeek V4 Pro</div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">为什么要重开？</div>
+          <div class="check-list">
+            <div class="check">有些配置文件可能还没加载。</div>
+            <div class="check">重开终端会重新读取配置。</div>
+            <div class="check">能正常回答，就说明 DeepSeek 初步对接 OK。</div>
+          </div>
+          <div class="result-strip">四步对接完成</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide outro-slide">
+    <div class="titlebox">
+      <div class="eyebrow">配置完成</div>
+      <h2 class="main-title">Claude Code<br><span class="hot">已经接入</span><br>DeepSeek</h2>
+      <div class="cover-sub">关注 AI 少年，下期继续实操</div>
+    </div>
+  </section>
+
+</div></div>
+<script>
+var S=[].slice.call(document.querySelectorAll('.slide')), i=0;
+function show(n){i=(n+S.length)%S.length; S.forEach(function(s,k){s.classList.toggle('active',k===i);});}
+function fit(){var d=document.querySelector('.deck'); var k=Math.min(window.innerWidth/1920, window.innerHeight/1080); d.style.transform='scale('+k.toFixed(4)+')';}
+document.addEventListener('keydown',function(e){
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){show(i+1);e.preventDefault();}
+  else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){show(i-1);e.preventDefault();}
+});
+document.querySelector('.stage').addEventListener('click',function(e){
+  if(e.clientX<window.innerWidth*.25)show(i-1); else show(i+1);
+});
+window.addEventListener('resize',fit); window.addEventListener('load',fit);
+var start=parseInt((location.hash||'').slice(1))||1; show(start-1); fit();
+</script>
+</body>
+</html>

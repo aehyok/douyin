@@ -30,8 +30,10 @@
 
 ## 四、粘土风格规格（视觉统一锚点）
 
-- 风格词：`3D clay claymation style, soft matte plasticine texture, rounded forms, handmade stop-motion look`
-- 质感：哑光橡皮泥、圆润体块、轻微指纹手作感、柔和棚光
+- 风格词：`soft 3D glassmorphism, futuristic AI interface, rounded translucent cards, neon glowing outline, blue purple gradient background, abstract workflow blocks, glowing orb, concentric circular rings, soft volumetric light, matte translucent material, clean tech visual, premium product deck style`
+- 质感分两类（根据你的推断任选其一）：
+    - 第一类 **哑光橡皮泥**、圆润体块、轻微指纹手作感、柔和棚光
+    - 第二类 **玻璃拟态 / 半透明亚克力 / 柔和霓虹光 / 磨砂渐变 / 发光边框 / 体积光氛围**
 - 比例：略卡通化的大头友好比例（比写实更圆、更可爱）
 - 配色锚点：人物 **珊瑚橘短袖**，搭配 **柔和薰衣草紫** 背景（与 visual-deck 默认色板 `#7a5ce0 / #6a4fd0`、高亮 `#f6c945` 一致）——暖橘在紫底上正好跳出来
 

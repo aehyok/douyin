@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Claude Code 接入 DeepSeek · v4</title>
+  <style>
+    :root {
+      --paper: #fff7eb;
+      --ink: #25364a;
+      --muted: #6f7b88;
+      --navy: #1f3652;
+      --mint: #39b894;
+      --coral: #f36f4d;
+      --lav: #bda7ef;
+      --yellow: #f4bd42;
+      --line: rgba(31,54,82,.16);
+      --font: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--paper);
+      font-family: var(--font);
+      color: var(--ink);
+    }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--paper);
+      cursor: pointer;
+    }
+
+    .deck {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      transform-origin: center center;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      padding: 72px 86px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(18px) scale(.992);
+      transition: opacity .34s ease, transform .34s ease, visibility .34s;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.72) 0 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.72) 0 1px, transparent 1px),
+        var(--paper);
+      background-size: 32px 32px;
+      border-radius: 0;
+      overflow: hidden;
+    }
+
+    .slide::after {
+      content: "";
+      position: absolute;
+      inset: 28px;
+      border: 2px solid rgba(31,54,82,.10);
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+      z-index: 2;
+    }
+
+    .cover {
+      padding: 0;
+      display: grid;
+      grid-template-columns: 1.08fr .92fr;
+      background:
+        linear-gradient(110deg, #fff8ea 0 54%, #d9c8ff 54% 100%);
+    }
+
+    .cover::after { display: none; }
+
+    .cover-copy {
+      padding: 96px 0 86px 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .pill {
+      width: max-content;
+      max-width: 100%;
+      padding: 16px 30px;
+      border-radius: 999px;
+      background: var(--navy);
+      color: #fff;
+      font-size: 32px;
+      font-weight: 900;
+      box-shadow: 0 12px 24px rgba(31,54,82,.22);
+    }
+
+    .hero-title {
+      margin: 36px 0 0;
+      font-size: 116px;
+      line-height: 1.06;
+      letter-spacing: 0;
+      font-weight: 950;
+      color: var(--ink);
+    }
+
+    .hero-title strong {
+      color: var(--mint);
+      -webkit-text-stroke: 7px #fff;
+      paint-order: stroke fill;
+      text-shadow: 0 8px 0 rgba(31,54,82,.10);
+    }
+
+    .hero-sub {
+      margin-top: 34px;
+      width: max-content;
+      max-width: 800px;
+      padding: 22px 34px;
+      border-radius: 22px;
+      background: var(--coral);
+      color: #fff;
+      font-size: 42px;
+      font-weight: 900;
+      box-shadow: 0 16px 28px rgba(243,111,77,.24);
+    }
+
+    .cover-art {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .cover-art::before {
+      content: "";
+      position: absolute;
+      width: 720px;
+      height: 720px;
+      border-radius: 50%;
+      background: #fff1cf;
+      box-shadow: 0 0 0 42px rgba(255,255,255,.35);
+    }
+
+    .character {
+      position: relative;
+      z-index: 2;
+      width: 720px;
+      height: 720px;
+      object-fit: cover;
+      border-radius: 52px;
+      box-shadow: 0 28px 54px rgba(31,54,82,.26);
+    }
+
+    .topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 36px;
+      margin-bottom: 56px;
+    }
+
+    .kicker {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 34px;
+      font-weight: 900;
+      color: var(--navy);
+    }
+
+    .num {
+      width: 78px;
+      height: 78px;
+      border-radius: 24px;
+      display: grid;
+      place-items: center;
+      background: var(--navy);
+      color: #fff;
+      font-size: 42px;
+      box-shadow: 0 12px 24px rgba(31,54,82,.20);
+    }
+
+    .page-tag {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--muted);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 68px;
+      line-height: 1.14;
+      letter-spacing: 0;
+      font-weight: 950;
+    }
+
+    .body {
+      height: 792px;
+      display: grid;
+      gap: 34px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .roadmap {
+      grid-template-columns: repeat(4, 1fr);
+      align-items: stretch;
+    }
+
+    .step {
+      border: 3px solid var(--line);
+      background: rgba(255,255,255,.78);
+      border-radius: 34px;
+      padding: 42px 34px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 18px 32px rgba(31,54,82,.08);
+    }
+
+    .step b {
+      display: block;
+      font-size: 74px;
+      line-height: 1;
+      color: var(--coral);
+    }
+
+    .step h3 {
+      margin: 34px 0 18px;
+      font-size: 46px;
+      line-height: 1.18;
+      font-weight: 950;
+    }
+
+    .step p {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.42;
+      font-weight: 760;
+      color: var(--muted);
+    }
+
+    .workbench {
+      grid-template-columns: 520px 1fr;
+      align-items: stretch;
+    }
+
+    .sidebar {
+      border-radius: 34px;
+      background: var(--navy);
+      color: #fff;
+      padding: 44px 38px;
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+      box-shadow: 0 20px 38px rgba(31,54,82,.24);
+    }
+
+    .side-title {
+      font-size: 42px;
+      line-height: 1.18;
+      font-weight: 950;
+      margin-bottom: 12px;
+    }
+
+    .side-item {
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+      padding: 20px;
+      border-radius: 22px;
+      background: rgba(255,255,255,.10);
+      font-size: 27px;
+      line-height: 1.34;
+      font-weight: 800;
+    }
+
+    .side-item span {
+      flex: none;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--mint);
+      font-size: 22px;
+      color: #fff;
+    }
+
+    .main-panel {
+      border-radius: 34px;
+      background: rgba(255,255,255,.82);
+      border: 3px solid var(--line);
+      padding: 46px;
+      display: grid;
+      align-content: center;
+      box-shadow: 0 18px 32px rgba(31,54,82,.08);
+    }
+
+    .terminal {
+      min-height: 472px;
+      border-radius: 30px;
+      background: #172236;
+      color: #edf4ff;
+      padding: 36px 40px;
+      font-family: Consolas, "SF Mono", monospace;
+      box-shadow: 0 18px 34px rgba(23,34,54,.26);
+    }
+
+    .dots {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .dots i {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: block;
+    }
+
+    .dots i:nth-child(1) { background: #ff6b66; }
+    .dots i:nth-child(2) { background: #ffd36c; }
+    .dots i:nth-child(3) { background: #55d98d; }
+
+    .cmd {
+      white-space: pre-line;
+      font-size: 36px;
+      line-height: 1.62;
+      font-weight: 800;
+    }
+
+    .cmd .g { color: #6ee79c; }
+    .cmd .y { color: #ffd36c; }
+    .cmd .b { color: #88c7ff; }
+
+    .matrix {
+      grid-template-columns: repeat(2, 1fr);
+      align-items: stretch;
+    }
+
+    .choice {
+      border-radius: 34px;
+      background: rgba(255,255,255,.82);
+      border: 3px solid var(--line);
+      padding: 54px 44px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 26px;
+      box-shadow: 0 18px 32px rgba(31,54,82,.08);
+    }
+
+    .choice .os {
+      font-size: 62px;
+      font-weight: 950;
+    }
+
+    .choice .pkg {
+      min-width: 230px;
+      padding: 22px 38px;
+      border-radius: 28px;
+      color: #fff;
+      background: var(--mint);
+      font-size: 82px;
+      font-weight: 950;
+      box-shadow: 0 16px 28px rgba(57,184,148,.22);
+    }
+
+    .choice:nth-child(2) .pkg { background: var(--lav); }
+
+    .choice p {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1.4;
+      color: var(--muted);
+      font-weight: 760;
+    }
+
+    .flow {
+      grid-template-columns: repeat(4, 1fr);
+      align-items: stretch;
+    }
+
+    .flow-card {
+      border-radius: 34px;
+      background: rgba(255,255,255,.82);
+      border: 3px solid var(--line);
+      padding: 44px 30px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 24px;
+      box-shadow: 0 18px 32px rgba(31,54,82,.08);
+    }
+
+    .mark {
+      width: 110px;
+      height: 110px;
+      margin: 0 auto;
+      border-radius: 32px;
+      display: grid;
+      place-items: center;
+      background: var(--coral);
+      color: #fff;
+      font-size: 48px;
+      font-weight: 950;
+      box-shadow: 0 16px 28px rgba(243,111,77,.22);
+    }
+
+    .flow-card:nth-child(2) .mark { background: var(--yellow); color: var(--navy); }
+    .flow-card:nth-child(3) .mark { background: var(--mint); }
+    .flow-card:nth-child(4) .mark { background: var(--lav); }
+
+    .flow-card h3 {
+      margin: 0;
+      font-size: 40px;
+      line-height: 1.18;
+      font-weight: 950;
+    }
+
+    .flow-card p {
+      margin: 0;
+      font-size: 29px;
+      line-height: 1.38;
+      color: var(--muted);
+      font-weight: 760;
+    }
+
+    .chat-grid {
+      grid-template-columns: .94fr 1.06fr;
+      align-items: stretch;
+    }
+
+    .chat {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 24px;
+    }
+
+    .bubble {
+      max-width: 86%;
+      padding: 24px 30px;
+      border-radius: 28px;
+      font-size: 36px;
+      line-height: 1.36;
+      font-weight: 850;
+      box-shadow: 0 14px 24px rgba(31,54,82,.10);
+    }
+
+    .bubble.user {
+      align-self: flex-end;
+      color: #fff;
+      background: var(--navy);
+      border-bottom-right-radius: 10px;
+    }
+
+    .bubble.ai {
+      align-self: flex-start;
+      background: #fff;
+      border: 3px solid var(--line);
+      border-bottom-left-radius: 10px;
+    }
+
+    .success {
+      border-radius: 34px;
+      background: #e5f8ee;
+      border: 3px solid rgba(57,184,148,.28);
+      padding: 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 26px;
+    }
+
+    .success strong {
+      font-size: 72px;
+      line-height: 1.12;
+      color: var(--mint);
+      font-weight: 950;
+    }
+
+    .success p {
+      margin: 0;
+      font-size: 34px;
+      line-height: 1.44;
+      color: var(--ink);
+      font-weight: 780;
+    }
+
+    .outro {
+      padding: 0;
+      display: grid;
+      grid-template-columns: .9fr 1.1fr;
+      background: linear-gradient(110deg, #d7fbef 0 45%, #fff5de 45% 100%);
+    }
+
+    .outro::after { display: none; }
+
+    .outro .cover-art::before { background: #d7c7ff; }
+
+    .outro-copy {
+      padding: 96px 100px 86px 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .mini {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+      margin-top: 42px;
+    }
+
+    .mini div {
+      padding: 24px 20px;
+      border-radius: 24px;
+      background: rgba(255,255,255,.76);
+      border: 3px solid var(--line);
+      font-size: 28px;
+      line-height: 1.28;
+      font-weight: 900;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="stage"><main class="deck">
+  <section class="slide cover active">
+    <div class="cover-copy">
+      <div class="pill">AI 少年 · DeepSeek 接入实操</div>
+      <h1 class="hero-title">Claude Code<br><strong>从零接入</strong><br>国产模型</h1>
+      <div class="hero-sub">4 步走完：安装、切换、填 Key、验证</div>
+    </div>
+    <div class="cover-art">
+      <img class="character" src="assets/character-fixed.png" alt="AI 少年固定人物形象">
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="topline">
+      <div class="kicker"><span class="num">01</span><h2>先把路线压成 4 张卡</h2></div>
+      <div class="page-tag">00:00 - 00:10</div>
+    </div>
+    <div class="body roadmap">
+      <div class="step"><b>1</b><div><h3>安装 Claude Code</h3><p>检查 Node.js 和 Git，安装后验证版本号。</p></div></div>
+      <div class="step"><b>2</b><div><h3>配置 CC Switch</h3><p>Windows 选 MSI，Mac 选 DMG，安装后打开。</p></div></div>
+      <div class="step"><b>3</b><div><h3>接入 DeepSeek</h3><p>选择 DeepSeek，创建 API Key，复制并启用。</p></div></div>
+      <div class="step"><b>4</b><div><h3>验证对接</h3><p>重开终端，输入 claude，确认模型响应。</p></div></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="topline">
+      <div class="kicker"><span class="num">02</span><h2>第一步：环境先过线</h2></div>
+      <div class="page-tag">00:11 - 01:02</div>
+    </div>
+    <div class="body workbench">
+      <aside class="sidebar">
+        <div class="side-title">安装前检查</div>
+        <div class="side-item"><span>1</span>Node.js 最低版本是 18，低于 18 跑不起来。</div>
+        <div class="side-item"><span>2</span>Mac 通常自带 Git，可以先不用处理。</div>
+        <div class="side-item"><span>3</span>Windows 可能没有 Git，需要单独安装。</div>
+      </aside>
+      <div class="main-panel">
+        <div class="terminal">
+          <div class="dots"><i></i><i></i><i></i></div>
+          <div class="cmd"><span class="b">$</span> 打开 WorkBuddy
+<span class="g">权限全开，直接运行</span>
+
+<span class="b">$</span> 检查 Node.js
+<span class="g">版本最低 18</span>
+
+<span class="b">$</span> 检查 Git
+<span class="y">Windows 用户重点看这里</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="topline">
+      <div class="kicker"><span class="num">03</span><h2>安装完 Claude Code，先验证</h2></div>
+      <div class="page-tag">安装命令 + 版本号</div>
+    </div>
+    <div class="body workbench">
+      <div class="main-panel">
+        <div class="terminal">
+          <div class="dots"><i></i><i></i><i></i></div>
+          <div class="cmd"><span class="b">$</span> 执行 Claude Code 安装命令
+<span class="g">安装完成</span>
+
+<span class="b">$</span> 验证版本号
+<span class="g">版本号已经验证完毕</span>
+
+<span class="b">$</span> claude
+<span class="y">能进入，说明这一步到位</span></div>
+        </div>
+      </div>
+      <aside class="sidebar">
+        <div class="side-title">遇到问题怎么办</div>
+        <div class="side-item"><span>1</span>直接截图。</div>
+        <div class="side-item"><span>2</span>告诉 AI 报了什么错误。</div>
+        <div class="side-item"><span>3</span>按错误信息继续处理。</div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="topline">
+      <div class="kicker"><span class="num">04</span><h2>第二步：CC Switch 选对安装包</h2></div>
+      <div class="page-tag">01:03 - 01:25</div>
+    </div>
+    <div class="body matrix">
+      <div class="choice">
+        <div class="os">Windows 用户</div>
+        <div class="pkg">MSI</div>
+        <p>直接下载 MSI，双击安装。</p>
+      </div>
+      <div class="choice">
+        <div class="os">Mac 用户</div>
+        <div class="pkg">DMG</div>
+        <p>下载 DMG，打开安装，随后启动。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="topline">
+      <div class="kicker"><span class="num">05</span><h2>第三步：DeepSeek API Key</h2></div>
+      <div class="page-tag">01:26 - 01:55</div>
+    </div>
+    <div class="body flow">
+      <div class="flow-card"><div class="mark">+</div><h3>新增</h3><p>在 CC Switch 里点击新增，选择 DeepSeek。</p></div>
+      <div class="flow-card"><div class="mark">¥</div><h3>充值</h3><p>字幕里提醒：开放平台需要先有余额。</p></div>
+      <div class="flow-card"><div class="mark">KEY</div><h3>创建</h3><p>API Keys 创建一个，专门给 Claude Code 使用。</p></div>
+      <div class="flow-card"><div class="mark">ON</div><h3>启用</h3><p>复制回 CC Switch，点击添加，然后启用。</p></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="topline">
+      <div class="kicker"><span class="num">06</span><h2>第四步：重开终端再验证</h2></div>
+      <div class="page-tag">01:56 - 02:23</div>
+    </div>
+    <div class="body chat-grid">
+      <div class="chat">
+        <div class="bubble user">你好</div>
+        <div class="bubble ai">OK</div>
+        <div class="bubble user">你是什么大模型？</div>
+        <div class="bubble ai">DeepSeek V4 Pro</div>
+      </div>
+      <div class="success">
+        <strong>看到响应，就算初步对接 OK</strong>
+        <p>字幕里特别提到：有些配置文件可能还没加载，所以终端关掉重开，让配置重新读取。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide outro">
+    <div class="cover-art">
+      <img class="character" src="assets/character-fixed.png" alt="AI 少年固定人物形象">
+    </div>
+    <div class="outro-copy">
+      <div class="pill">最终状态</div>
+      <h2 class="hero-title">Claude Code<br><strong>已接入</strong><br>DeepSeek</h2>
+      <div class="mini">
+        <div>安装完成</div>
+        <div>配置启用</div>
+        <div>验证通过</div>
+      </div>
+      <div class="hero-sub">关注 AI 少年，下期继续实操</div>
+    </div>
+  </section>
+</main></div>
+<script>
+var S=[].slice.call(document.querySelectorAll('.slide')), i=0;
+function show(n){i=(n+S.length)%S.length; S.forEach(function(s,k){s.classList.toggle('active',k===i);});}
+function fit(){var d=document.querySelector('.deck'); var k=Math.min(innerWidth/1920, innerHeight/1080); d.style.transform='scale('+k.toFixed(4)+')';}
+document.addEventListener('keydown',function(e){
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){show(i+1);e.preventDefault();}
+  else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){show(i-1);e.preventDefault();}
+});
+document.querySelector('.stage').addEventListener('click',function(e){ if(e.clientX<innerWidth*.25)show(i-1); else show(i+1); });
+addEventListener('resize',fit); addEventListener('load',fit);
+var start=parseInt((location.hash||'').slice(1),10)||1; show(start-1); fit();
+</script>
+</body>
+</html>
