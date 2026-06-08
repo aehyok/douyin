@@ -1,0 +1,15 @@
+{
+  "eval_id": 1,
+  "config": "with_skill",
+  "expectations": [
+    {"text": "判定为高风险或不可发布（明确告诉用户会被驳回）", "passed": true, "evidence": "风险等级：高；直接拦截，必须修改后才能发布"},
+    {"text": "识别出微信号 meili2025 属于 A1 引导联系方式联系", "passed": true, "evidence": "明确标注 A1 引导联系方式联系，并指出微信号变体规避也违规"},
+    {"text": "识别出『评论区扣1我私聊』属于 A2 引导私下联系", "passed": true, "evidence": "明确标注 A2 引导用户私下联系"},
+    {"text": "识别出『下载app/应用商店搜』属于 B1/B2 诱导下载", "passed": true, "evidence": "B1 直接引导下载 / B3 福利诱导下载，并单独标出应用商店搜=B1"},
+    {"text": "识别出『注册送体验装』『50元红包』属于 B3 福利诱导", "passed": true, "evidence": "明确标 B3 福利诱导下载 + 福利钩子描述"},
+    {"text": "提供具体可发布的合规改写版本", "passed": true, "evidence": "提供完整可直接用的改写版『姐妹们！这款面膜我个人用着挺喜欢的...』"},
+    {"text": "改写版去掉了所有外流引导和下载诱导", "passed": true, "evidence": "改写版删除了微信号/扣1私聊/下载app/应用商店搜/注册送，全部交易动作收回小黄车"}
+  ],
+  "score": 7,
+  "max_score": 7
+}

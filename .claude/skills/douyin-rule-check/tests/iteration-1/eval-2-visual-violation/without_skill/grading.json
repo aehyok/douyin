@@ -1,0 +1,16 @@
+{
+  "eval_id": 2,
+  "config": "without_skill",
+  "expectations": [
+    {"text": "判定为高风险或不可发布", "passed": true, "evidence": "高（大概率被驳回）"},
+    {"text": "明确指出违规在画面层（镜头3）", "passed": true, "evidence": "画面违规足以让整条视频被星图预审驳回；问题集中在镜头 3"},
+    {"text": "识别出二维码 是 B4 提供下载渠道", "passed": true, "evidence": "二维码（强外流载体）/ 二维码是『硬触发』项（识别但未用 B4 代号）"},
+    {"text": "识别出红色箭头/指向元素 是画面层引导违规", "passed": true, "evidence": "红色箭头（强视觉引导，加重诱导判定）"},
+    {"text": "识别出『扫码免费下载』字幕同时命中 B1 下载 + B3 福利诱导", "passed": false, "evidence": "只笼统说『扫码免费下载』字幕违规，未拆解为下载指令+福利钩子两层"},
+    {"text": "给出删除/重剪镜头 3 的具体替代方案", "passed": true, "evidence": "给了删除二维码/箭头/字幕的具体改法"},
+    {"text": "明确说明口播+画面是合并判定", "passed": true, "evidence": "ASR + OCR + 视觉元素检测，任何一路命中违规整条驳回"}
+  ],
+  "score": 6,
+  "max_score": 7,
+  "qualitative_notes": "致命问题：建议改为『应用商店搜索 XX』『app store 搜 XX』并称『这类自主搜索表达是允许的』——这是错的，规范明确把『应用商店搜 xx』列为 B1 违规。baseline 给出错误指导会让用户改错版本继续被驳。"
+}

@@ -1,0 +1,16 @@
+{
+  "eval_id": 1,
+  "config": "without_skill",
+  "expectations": [
+    {"text": "判定为高风险或不可发布（明确告诉用户会被驳回）", "passed": true, "evidence": "高概率被预审驳回，不建议直接投稿"},
+    {"text": "识别出微信号 meili2025 属于 A1 引导联系方式联系", "passed": true, "evidence": "明示站外联系方式 + 利益诱导外流（未用 A1 代号但识别准确）"},
+    {"text": "识别出『评论区扣1我私聊』属于 A2 引导私下联系", "passed": true, "evidence": "引导脱离公域 / 私域引流（未用 A2 代号但识别准确）"},
+    {"text": "识别出『下载app/应用商店搜』属于 B1/B2 诱导下载", "passed": true, "evidence": "诱导下载/使用第三方 App + 应用商店搜=变体下载"},
+    {"text": "识别出『注册送体验装』『50元红包』属于 B3 福利诱导", "passed": true, "evidence": "标注利益诱导外流 / 利益诱导加微（未用 B3 代号但识别准确）"},
+    {"text": "提供具体可发布的合规改写版本", "passed": true, "evidence": "提供完整改写版"},
+    {"text": "改写版去掉了所有外流引导和下载诱导", "passed": true, "evidence": "改写版收回站内"}
+  ],
+  "score": 7,
+  "max_score": 7,
+  "qualitative_notes": "baseline 在这种明显违规的 case 上表现良好；不需要 skill 也能识别"
+}

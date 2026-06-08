@@ -1,0 +1,13 @@
+{
+  "eval_id": 3,
+  "config": "without_skill",
+  "expectations": [
+    {"text": "判定为通过/合规", "passed": true, "evidence": "基本合规，过审风险较低；当前文案可直接发，无需修改"},
+    {"text": "正确识别剪映为字节跳动旗下产品", "passed": true, "evidence": "剪映（国内版）是字节跳动旗下产品，与抖音同属一个商业生态"},
+    {"text": "正确识别为分享式表达", "passed": false, "evidence": "未明确把『我用 xx 做的』『大家试试看』归类为分享式表达；只是泛泛说『普通创作者教程内容，过审基本无碍』"},
+    {"text": "不要求用户做任何不必要的修改", "passed": false, "evidence": "引入大量与 skill 无关的内容（商单/竞品/抄袭/搬运暗示等），让用户做了多个『可选优化』建议，反而拉高了用户的判断负担"}
+  ],
+  "score": 2,
+  "max_score": 4,
+  "qualitative_notes": "baseline 给了正确结论但脱离了 skill 应该聚焦的两大类。把视频抄袭风险/星图商单冲突等无关问题塞进来，让用户面对一份信息过载的报告。"
+}

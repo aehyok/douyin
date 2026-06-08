@@ -1,0 +1,12 @@
+{
+  "eval_id": 3,
+  "config": "with_skill",
+  "expectations": [
+    {"text": "判定为通过/合规", "passed": true, "evidence": "风险等级：通过（低）；可直接发布"},
+    {"text": "正确识别剪映为字节跳动旗下产品（抖音生态内）", "passed": true, "evidence": "剪映是字节跳动旗下产品，属于抖音生态范围内的工具"},
+    {"text": "正确识别『我用 xx 做的』『大家可以自己试试』为分享式表达", "passed": true, "evidence": "属于官方明示的『分享式/介绍式』表达；第一人称分享 + 功能介绍的句式"},
+    {"text": "不要求用户做任何不必要的修改", "passed": true, "evidence": "未发现违规；只在备注里提示画面层做最后确认"}
+  ],
+  "score": 4,
+  "max_score": 4
+}

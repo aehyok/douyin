@@ -1,0 +1,12 @@
+{
+  "eval_id": 4,
+  "config": "without_skill",
+  "expectations": [
+    {"text": "判定为通过/合规", "passed": false, "evidence": "判定为『中等风险（建议修改后再发）』。在 skill 关心的外流+诱导下载两大类上确实判通过，但总体结论被错误地拉到中风险。"},
+    {"text": "不把『干皮亲妈』等化妆品广告法范围的边缘表述误判为本 skill 范围内的违规", "passed": false, "evidence": "把『干皮亲妈』『连续用了一周』『成分浓度不一致』标为高风险违规并要求改写——这些超出 skill 范围"},
+    {"text": "明确区分『超出本 skill 范围的提醒』而非『外流违规』", "passed": false, "evidence": "未做区分，把广告法功效宣称问题混入主报告且权重高过外流类"}
+  ],
+  "score": 0,
+  "max_score": 4,
+  "qualitative_notes": "这是 skill 价值最强体现的 case。baseline 因为没有锚定『只看外流+诱导下载』这两类，被广告法/功效宣称等无关问题拽走，输出了一份让用户做无用修改的报告。"
+}

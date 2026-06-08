@@ -1,0 +1,11 @@
+{
+  "eval_id": 4,
+  "config": "with_skill",
+  "expectations": [
+    {"text": "判定为通过/合规（针对外流+诱导下载两大类）", "passed": true, "evidence": "风险等级：通过（低）；A/B 两大类均未触发；可直接发布"},
+    {"text": "不把『干皮亲妈』『连续用了一周』等化妆品广告法范围的边缘表述误判为本 skill 范围内的违规", "passed": true, "evidence": "未把任何字幕标为 A/B 类违规"},
+    {"text": "如果提到化妆品广告法风险，应明确区分『超出本 skill 范围的提醒』而非『外流违规』", "passed": true, "evidence": "明确写道『超出本 skill 范围、但建议你自己再过一眼的点（不是星图驳回项，是化妆品广告/医疗用语相关，仅作风险提醒）』"}
+  ],
+  "score": 4,
+  "max_score": 4
+}

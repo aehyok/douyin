@@ -1,0 +1,15 @@
+{
+  "eval_id": 2,
+  "config": "with_skill",
+  "expectations": [
+    {"text": "判定为高风险或不可发布（不能被『口播干净』迷惑）", "passed": true, "evidence": "风险等级：高；直接拦截，必须修改"},
+    {"text": "明确指出违规在画面层（镜头3）而不是口播", "passed": true, "evidence": "口播确实写得很干净...问题全在画面...镜头 3 那一帧"},
+    {"text": "识别出二维码 是 B4 提供下载渠道", "passed": true, "evidence": "B4 提供下载渠道 / 巨量星图内容营销规范画面层补充"},
+    {"text": "识别出红色箭头/指向元素 是画面层引导违规", "passed": true, "evidence": "箭头/手指/光圈指向...是 SKILL 里明确列出的画面层违规元素"},
+    {"text": "识别出『扫码免费下载』字幕同时命中 B1 下载 + B3 福利诱导", "passed": true, "evidence": "B1 + B3 + B4 三重命中；扫码=B4，下载=B1，免费=B3"},
+    {"text": "给出删除/重剪镜头 3 的具体替代方案", "passed": true, "evidence": "提供 3 个具体重剪方案"},
+    {"text": "明确说明口播+画面是合并判定", "passed": true, "evidence": "星图预审是口播 + 字幕 + 画面合并判定，『口播干净』不能豁免画面违规"}
+  ],
+  "score": 7,
+  "max_score": 7
+}

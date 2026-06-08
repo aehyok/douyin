@@ -1,0 +1,210 @@
+{
+  "metadata": {
+    "skill_name": "douyin-rule-check",
+    "skill_path": "/Users/jingyi_wu/douyin-rule-check",
+    "executor_model": "claude-opus-4-7",
+    "timestamp": "2026-06-06T06:00:00Z",
+    "evals_run": [1, 2, 3, 4],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "eval_name": "blatant-violation",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 128.4,
+        "tokens": 21000
+      },
+      "expectations": [
+        {"text": "判定为高风险或不可发布", "passed": true, "evidence": "风险等级：高；直接拦截，必须修改后才能发布"},
+        {"text": "识别出微信号 meili2025 属于 A1 引导联系方式联系", "passed": true, "evidence": "明确标注 A1 引导联系方式联系"},
+        {"text": "识别出『评论区扣1我私聊』属于 A2 引导私下联系", "passed": true, "evidence": "明确标注 A2 引导用户私下联系"},
+        {"text": "识别出『下载app/应用商店搜』属于 B1/B2 诱导下载", "passed": true, "evidence": "B1 直接引导下载 / B3 福利诱导下载，单独标出应用商店搜=B1"},
+        {"text": "识别出『注册送体验装』『50元红包』属于 B3 福利诱导", "passed": true, "evidence": "明确标 B3 福利诱导下载"},
+        {"text": "提供具体可发布的合规改写版本", "passed": true, "evidence": "提供完整可直接用的改写版"},
+        {"text": "改写版去掉了所有外流引导和下载诱导", "passed": true, "evidence": "改写版收回小黄车，删除全部 A/B 类违规"}
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "blatant-violation",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 231.7,
+        "tokens": 22702
+      },
+      "expectations": [
+        {"text": "判定为高风险或不可发布", "passed": true, "evidence": "高概率被预审驳回"},
+        {"text": "识别出微信号 meili2025 属于 A1 引导联系方式联系", "passed": true, "evidence": "明示站外联系方式（识别准确，未用代号）"},
+        {"text": "识别出『评论区扣1我私聊』属于 A2 引导私下联系", "passed": true, "evidence": "引导脱离公域 / 私域引流"},
+        {"text": "识别出『下载app/应用商店搜』属于 B1/B2 诱导下载", "passed": true, "evidence": "诱导下载第三方 App + 应用商店搜=变体下载"},
+        {"text": "识别出『注册送体验装』『50元红包』属于 B3 福利诱导", "passed": true, "evidence": "标注利益诱导外流"},
+        {"text": "提供具体可发布的合规改写版本", "passed": true, "evidence": "提供完整改写版"},
+        {"text": "改写版去掉了所有外流引导和下载诱导", "passed": true, "evidence": "改写版收回站内"}
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "visual-violation",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 206.7,
+        "tokens": 22728
+      },
+      "expectations": [
+        {"text": "判定为高风险或不可发布", "passed": true, "evidence": "风险等级：高；直接拦截，必须修改"},
+        {"text": "明确指出违规在画面层（镜头3）而不是口播", "passed": true, "evidence": "口播写得很干净...问题全在画面...镜头 3"},
+        {"text": "识别出二维码 是 B4 提供下载渠道", "passed": true, "evidence": "B4 提供下载渠道"},
+        {"text": "识别出红色箭头/指向元素 是画面层引导违规", "passed": true, "evidence": "箭头/手指/光圈指向...是 SKILL 里明确列出的画面层违规元素"},
+        {"text": "识别出『扫码免费下载』字幕同时命中 B1 下载 + B3 福利诱导", "passed": true, "evidence": "B1 + B3 + B4 三重命中"},
+        {"text": "给出删除/重剪镜头 3 的具体替代方案", "passed": true, "evidence": "提供 3 个具体重剪方案"},
+        {"text": "明确说明口播+画面是合并判定", "passed": true, "evidence": "星图预审是口播 + 字幕 + 画面合并判定"}
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "visual-violation",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.857,
+        "passed": 6,
+        "failed": 1,
+        "total": 7,
+        "time_seconds": 182.4,
+        "tokens": 22654
+      },
+      "expectations": [
+        {"text": "判定为高风险或不可发布", "passed": true, "evidence": "高（大概率被驳回）"},
+        {"text": "明确指出违规在画面层（镜头3）", "passed": true, "evidence": "画面违规足以让整条视频被驳回"},
+        {"text": "识别出二维码 是 B4 提供下载渠道", "passed": true, "evidence": "二维码是『硬触发』项（识别准确未用代号）"},
+        {"text": "识别出红色箭头/指向元素 是画面层引导违规", "passed": true, "evidence": "红色箭头（强视觉引导，加重诱导判定）"},
+        {"text": "识别出『扫码免费下载』字幕同时命中 B1 下载 + B3 福利诱导", "passed": false, "evidence": "未拆解字幕为下载指令+福利钩子两层"},
+        {"text": "给出删除/重剪镜头 3 的具体替代方案", "passed": true, "evidence": "给了删除二维码/箭头/字幕的具体改法"},
+        {"text": "明确说明口播+画面是合并判定", "passed": true, "evidence": "ASR + OCR + 视觉元素检测，任何一路命中违规整条驳回"}
+      ],
+      "notes": [
+        "致命问题：建议改为『应用商店搜索 XX』并称『这类自主搜索表达是允许的』——这是错的，规范明确把『应用商店搜 xx』列为 B1 违规。会让用户改错版本继续被驳。"
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "edge-jianying-share-style",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 141.5,
+        "tokens": 21998
+      },
+      "expectations": [
+        {"text": "判定为通过/合规", "passed": true, "evidence": "风险等级：通过（低）；可直接发布"},
+        {"text": "正确识别剪映为字节跳动旗下产品（抖音生态内）", "passed": true, "evidence": "剪映是字节跳动旗下产品，属于抖音生态范围内的工具"},
+        {"text": "正确识别为分享式表达", "passed": true, "evidence": "属于官方明示的『分享式/介绍式』表达"},
+        {"text": "不要求用户做任何不必要的修改", "passed": true, "evidence": "未发现违规；只在备注里提示画面层做最后确认"}
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "edge-jianying-share-style",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5,
+        "passed": 2,
+        "failed": 2,
+        "total": 4,
+        "time_seconds": 201.6,
+        "tokens": 22934
+      },
+      "expectations": [
+        {"text": "判定为通过/合规", "passed": true, "evidence": "基本合规，过审风险较低"},
+        {"text": "正确识别剪映为字节跳动旗下产品", "passed": true, "evidence": "剪映（国内版）是字节跳动旗下产品"},
+        {"text": "正确识别为分享式表达", "passed": false, "evidence": "未明确把『我用 xx 做的』归为分享式表达，只笼统说『普通创作者教程内容』"},
+        {"text": "不要求用户做任何不必要的修改", "passed": false, "evidence": "引入大量与 skill 无关的内容（商单/竞品/抄袭/搬运），让用户做多个『可选优化』，拉高判断负担"}
+      ]
+    },
+    {
+      "eval_id": 4,
+      "eval_name": "clean-zhongcao",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 260.3,
+        "tokens": 21171
+      },
+      "expectations": [
+        {"text": "判定为通过/合规（针对外流+诱导下载两大类）", "passed": true, "evidence": "风险等级：通过（低）；A/B 两大类均未触发"},
+        {"text": "不把『干皮亲妈』『连续用了一周』等化妆品广告法范围误判为外流违规", "passed": true, "evidence": "未把任何字幕标为 A/B 类违规"},
+        {"text": "明确区分『超出本 skill 范围的提醒』而非外流违规", "passed": true, "evidence": "明确写道『超出本 skill 范围、但建议你自己再过一眼的点（不是星图驳回项，仅作风险提醒）』"}
+      ]
+    },
+    {
+      "eval_id": 4,
+      "eval_name": "clean-zhongcao",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.0,
+        "passed": 0,
+        "failed": 3,
+        "total": 3,
+        "time_seconds": 167.8,
+        "tokens": 20957
+      },
+      "expectations": [
+        {"text": "判定为通过/合规", "passed": false, "evidence": "判定为『中等风险（建议修改后再发）』。在外流+诱导下载两大类上判通过，但被广告法话题拉到中风险。"},
+        {"text": "不把『干皮亲妈』等化妆品广告法范围误判为本 skill 范围内的违规", "passed": false, "evidence": "把『干皮亲妈』『连续用了一周』『成分浓度不一致』标为高风险并要求改写"},
+        {"text": "明确区分『超出本 skill 范围的提醒』而非外流违规", "passed": false, "evidence": "未做区分，把广告法功效宣称权重高过外流类"}
+      ],
+      "notes": [
+        "skill 价值最强体现的 case。baseline 因为没有锚定外流+诱导下载这两类，被广告法/功效宣称等无关问题拽走，让用户做无用修改。"
+      ]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 184.2, "stddev": 53.7, "min": 128.4, "max": 260.3},
+      "tokens": {"mean": 21724, "stddev": 731, "min": 21000, "max": 22728}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 0.589, "stddev": 0.40, "min": 0.0, "max": 1.0},
+      "time_seconds": {"mean": 195.9, "stddev": 27.0, "min": 167.8, "max": 231.7},
+      "tokens": {"mean": 22312, "stddev": 845, "min": 20957, "max": 22934}
+    },
+    "delta": {
+      "pass_rate": "+0.411",
+      "time_seconds": "-11.7",
+      "tokens": "-588"
+    }
+  },
+  "notes": [
+    "Skill 在判定『纯种草』和『教程类边缘合规』case 上明显胜出 baseline——这两个 case 最容易被『广告法』『竞品冲突』等无关问题误导。明显违规 case（eval-1）两边都识别得出来，但 with_skill 用了一半时间。",
+    "Skill 提供的 A/B 子类型代号让识别更结构化，让 grading 更可机械化检查。",
+    "Baseline 在 eval-2 给出错误改写建议（『应用商店搜 XX 是允许的』）——这是规范明确禁止的话术。Skill 避免了这个错误。"
+  ]
+}
