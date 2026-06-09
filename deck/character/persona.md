@@ -59,6 +59,7 @@ A cute young East Asian man with tousled dark brown hair and thin black rectangu
 
 - **眼镜是辨识锚点**，每次出图都要带上 `thin black rectangular glasses`。
 - **珊瑚橘短袖 + 笔记本上的 Apple 图标** 是当前形象的另外两个锚点，出图尽量保留。
-- 当前主形象文件：`persona-clay-v2.png`（珊瑚短袖版）；`persona-clay.png` 是早期藏青连帽版，留作备份。
+- 当前主形象文件：`persona-clay-v5.png`（珊瑚短袖 + 黑色耳机 + 暖色书房场景版，2026-06-04）；`persona-clay-v2.png`（珊瑚短袖无场景版）与 `persona-clay.png`（早期藏青连帽版）留作备份。
+- v5 在三锚点之外多了一个识别物：**黑色头戴式耳机**（挂颈），出 IP 形象时尽量带上。
 - 出图**不要透明背景**（imgen 后端不支持，报 400）；要抠图先出白底再用 chroma_cut。
 - 标题文字不进底图（`NO text anywhere`），交给 HTML 叠字。
