@@ -1,0 +1,10 @@
+node_modules/
+src/
+test/
+tsconfig.json
+*.log
+.DS_Store
+image-*.png
+package-lock.json
+docs/
+.github/

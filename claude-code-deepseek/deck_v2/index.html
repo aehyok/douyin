@@ -317,11 +317,52 @@
     .term .l.cmd {
       margin-top: 6px;
     }
+    /* hf-motion-v2: ???????????????? */
+    .deck .slide { pointer-events: none; will-change: transform, opacity; transition: none; }
+    .deck .slide.active { pointer-events: auto; }
+    .deck .slide.entering { visibility: visible; z-index: 3; }
+    .deck .slide.exiting { opacity: 1; visibility: visible; z-index: 1; pointer-events: none; }
+    .deck .slide.entering.direction-forward { animation: v2ClayIn .72s cubic-bezier(.18,.9,.2,1.2) both; }
+    .deck .slide.exiting.direction-forward { animation: v2ClayOut .72s cubic-bezier(.18,.8,.25,1) both; }
+    .deck .slide.entering.direction-backward { animation: v2ClayBackIn .72s cubic-bezier(.18,.9,.2,1.2) both; }
+    .deck .slide.exiting.direction-backward { animation: v2ClayBackOut .72s cubic-bezier(.18,.8,.25,1) both; }
+    .slide.active.cover-slide::before, .slide.active.outro-slide::before { animation: v2Veil .9s ease both; }
+    .slide.active .bigt { animation: v2Squash .62s .14s cubic-bezier(.18,.9,.2,1.22) both; }
+    .slide.active .bigt.s2 { animation-delay: .24s; }
+    .slide.active .subt { animation: v2Sticker .58s .42s cubic-bezier(.18,.9,.2,1.25) both; }
+    .slide.active .steprow, .slide.active .reqcard, .slide.active .dlcard, .slide.active .fstep { animation: v2CardPop .5s cubic-bezier(.18,.9,.2,1.18) both; }
+    .slide.active .steprow:nth-child(1), .slide.active .fstep:nth-child(1) { animation-delay: .10s; }
+    .slide.active .steprow:nth-child(2), .slide.active .fstep:nth-child(2) { animation-delay: .18s; }
+    .slide.active .steprow:nth-child(3), .slide.active .fstep:nth-child(3) { animation-delay: .26s; }
+    .slide.active .steprow:nth-child(4), .slide.active .fstep:nth-child(4) { animation-delay: .34s; }
+    .slide.active .fstep:nth-child(5) { animation-delay: .42s; } .slide.active .fstep:nth-child(6) { animation-delay: .50s; }
+    .slide.active .reqcard:nth-child(1), .slide.active .dlcard:nth-child(1) { animation-delay: .16s; }
+    .slide.active .reqcard:nth-child(2), .slide.active .dlcard:nth-child(2) { animation-delay: .29s; }
+    .slide.active .term { animation: v2TerminalBlob .62s .14s both; }
+    .slide.active .term .l { animation: v2TypeRise .34s ease both; }
+    .slide.active .term .l:nth-child(2) { animation-delay: .46s; } .slide.active .term .l:nth-child(3) { animation-delay: .56s; }
+    .slide.active .term .l:nth-child(4) { animation-delay: .66s; } .slide.active .term .l:nth-child(5) { animation-delay: .76s; }
+    .slide.active .term .l:nth-child(7) { animation-delay: .94s; }
+    .slide.active .arrow-r { animation: v2ArrowBoing .48s .88s both; }
+    .slide.active .outbox { animation: v2CardPop .56s 1.02s cubic-bezier(.18,.9,.2,1.18) both; }
+    @keyframes v2ClayIn { from { opacity:0; transform: translateX(130px) scale(.88) rotate(2deg); } 65% { opacity:1; transform: translateX(-10px) scale(1.03) rotate(-.5deg); } to { opacity:1; transform: translateX(0) scale(1) rotate(0); } }
+    @keyframes v2ClayOut { to { opacity:0; transform: translateX(-90px) scale(.92) rotate(-1.2deg); } }
+    @keyframes v2ClayBackIn { from { opacity:0; transform: translateX(-130px) scale(.88) rotate(-2deg); } 65% { opacity:1; transform: translateX(10px) scale(1.03) rotate(.5deg); } to { opacity:1; transform: translateX(0) scale(1) rotate(0); } }
+    @keyframes v2ClayBackOut { to { opacity:0; transform: translateX(90px) scale(.92) rotate(1.2deg); } }
+    @keyframes v2Veil { from { transform: translateX(-8%); opacity:.55; } to { transform: none; opacity:1; } }
+    @keyframes v2Squash { from { opacity:0; transform: translateY(-36px) scaleY(.82); } 70% { opacity:1; transform: translateY(4px) scaleY(1.08); } to { opacity:1; transform:none; } }
+    @keyframes v2Sticker { from { opacity:0; transform: rotate(-4deg) scale(.78); } to { opacity:1; transform:none; } }
+    @keyframes v2CardPop { from { opacity:0; transform: translateY(42px) scale(.86); } to { opacity:1; transform:none; } }
+    @keyframes v2TerminalBlob { from { opacity:0; transform: translateY(34px) scale(.94); clip-path: inset(0 0 86% 0 round 34px); } to { opacity:1; transform:none; clip-path: inset(0 0 0 0 round 34px); } }
+    @keyframes v2TypeRise { from { opacity:0; transform: translateX(-18px); } to { opacity:1; transform:none; } }
+    @keyframes v2ArrowBoing { from { opacity:0; transform: scale(.4) translateX(-40px); } to { opacity:1; transform:none; } }
+
+    @media (prefers-reduced-motion: reduce) { .slide, .slide.active, .slide.entering, .slide.exiting, .slide.active *, .slide.active::before, .slide.active::after { animation-duration: .01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; } }
   </style>
 </head>
 
 <body>
-  <div class="stage">
+  <div class="stage" id="root" data-composition-id="claude-code-deepseek-v2" data-start="0" data-duration="8" data-width="1920" data-height="1080">
     <div class="deck">
 
       <!-- ============ 1 · 封面（视觉页）============ -->
@@ -511,36 +552,21 @@
 
     </div>
   </div>
-  <script src="assets/fit.js"></script>
   <script>
-    var S = [].slice.call(document.querySelectorAll('.slide')), i = 0, B = document.body, D = document.querySelector('.deck');
-    function paintBg(s) {
-      var c = s.getAttribute('data-bg');
-      if (c) {
-        B.style.background = c;
-      } else {
-        B.style.background = '#efe7d6';
-        B.style.backgroundImage = 'radial-gradient(rgba(255,255,255,.45) 1px,transparent 1px)';
-        B.style.backgroundSize = '8px 8px';
-      }
-    }
-    function fit() {
-      var s = S[i], rw = window.innerWidth / 1920, rh = window.innerHeight / 1080;
-      var full = s.classList.contains('cover-slide') || s.classList.contains('outro-slide');
-      var k = full ? Math.max(rw, rh) : Math.min(rw, rh);
-      D.style.transform = 'scale(' + k.toFixed(4) + ')';
-    }
-    function show(n) { i = (n + S.length) % S.length; S.forEach(function (s, k) { s.classList.toggle('active', k === i); }); paintBg(S[i]); fit(); }
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { show(i + 1); e.preventDefault(); }
-      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { show(i - 1); e.preventDefault(); }
-    });
-    document.querySelector('.stage').addEventListener('click', function (e) {
-      if (e.clientX < window.innerWidth * 0.25) show(i - 1); else show(i + 1);
-    });
-    window.addEventListener('resize', fit); window.addEventListener('load', fit);
-    var start = parseInt((location.hash || '').slice(1)) || 1; show(start - 1); fit();
-  </script>
+var S=[].slice.call(document.querySelectorAll('.slide')), i=0, animTimer=0;
+var D=document.querySelector('.deck'), B=document.body;
+window.__timelines=window.__timelines||{};
+window.__timelines["claude-code-deepseek-v2"]={duration:function(){return 8;},time:function(){return 0;},pause:function(){},play:function(){},seek:function(){return 0;},totalTime:function(){return 0;}};
+function cleanMotionClasses(s){s.classList.remove('entering','exiting','direction-forward','direction-backward');}
+function paintBg(s){var c=s.getAttribute('data-bg'); if(c){B.style.background=c; B.style.backgroundImage='none';} else {B.style.background='#efe7d6'; B.style.backgroundImage='radial-gradient(rgba(255,255,255,.45) 1px,transparent 1px)'; B.style.backgroundSize='8px 8px';}}
+function updatePager(){}
+function show(n,animate){var prev=i,next=(n+S.length)%S.length; var dir=(n<prev&&!(prev===S.length-1&&next===0))||(prev===0&&next===S.length-1)?'backward':'forward'; var oldSlide=S[prev],newSlide=S[next]; if(animTimer)clearTimeout(animTimer); S.forEach(cleanMotionClasses); i=next; paintBg(newSlide); fit(); if(!animate||oldSlide===newSlide){S.forEach(function(s,k){s.classList.toggle('active',k===i);}); return;} oldSlide.classList.remove('active'); oldSlide.classList.add('exiting','direction-'+dir); newSlide.classList.add('active','entering','direction-'+dir); animTimer=setTimeout(function(){oldSlide.classList.remove('exiting','direction-'+dir); newSlide.classList.remove('entering');},820);}
+function fit(){var s=S[i],rw=window.innerWidth/1920,rh=window.innerHeight/1080; var full=s.classList.contains('cover-slide')||s.classList.contains('outro-slide'); var k=full?Math.max(rw,rh):Math.min(rw,rh); D.style.transform='scale('+k.toFixed(4)+')';}
+document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){show(i+1,true);e.preventDefault();}else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){show(i-1,true);e.preventDefault();}});
+document.querySelector('.stage').addEventListener('click',function(e){if(e.clientX<window.innerWidth*.25)show(i-1,true);else show(i+1,true);});
+window.addEventListener('resize',fit); window.addEventListener('load',fit);
+var start=parseInt((location.hash||'').slice(1),10)||1; show(start-1,false); fit();
+</script>
 </body>
 
 </html>

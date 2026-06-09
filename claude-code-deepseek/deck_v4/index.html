@@ -546,10 +546,42 @@
       font-weight: 900;
       text-align: center;
     }
+    /* hf-motion-v4: ?????????/??? */
+    .deck { perspective: 1600px; }
+    .slide { pointer-events:none; will-change: transform, opacity; transition:none; transform-origin:center left; }
+    .slide.active { pointer-events:auto; }
+    .slide.entering { visibility:visible; z-index:3; }
+    .slide.exiting { opacity:1; visibility:visible; z-index:1; pointer-events:none; }
+    .slide.entering.direction-forward { animation:v4PageIn .7s cubic-bezier(.18,.85,.2,1) both; }
+    .slide.exiting.direction-forward { animation:v4PageOut .7s cubic-bezier(.18,.85,.2,1) both; }
+    .slide.entering.direction-backward { animation:v4PageBackIn .7s cubic-bezier(.18,.85,.2,1) both; }
+    .slide.exiting.direction-backward { animation:v4PageBackOut .7s cubic-bezier(.18,.85,.2,1) both; }
+    .slide.active .pill, .slide.active .page-tag { animation:v4Stamp .42s .12s both; }
+    .slide.active .hero-title, .slide.active .kicker, .slide.active .side-title { animation:v4InkDrop .52s .2s both; }
+    .slide.active .hero-sub, .slide.active .mini { animation:v4NoteRise .44s .42s both; }
+    .slide.active .character { animation:v4CharPeek .7s .26s both; }
+    .slide.active .step, .slide.active .choice, .slide.active .flow-card, .slide.active .bubble, .slide.active .success { animation:v4PaperStack .48s both; }
+    .slide.active .step:nth-child(1), .slide.active .flow-card:nth-child(1), .slide.active .bubble:nth-child(1){animation-delay:.12s}
+    .slide.active .step:nth-child(2), .slide.active .flow-card:nth-child(2), .slide.active .bubble:nth-child(2){animation-delay:.22s}
+    .slide.active .step:nth-child(3), .slide.active .flow-card:nth-child(3), .slide.active .bubble:nth-child(3){animation-delay:.32s}
+    .slide.active .step:nth-child(4), .slide.active .flow-card:nth-child(4), .slide.active .bubble:nth-child(4){animation-delay:.42s}
+    .slide.active .terminal, .slide.active .main-panel { animation:v4PanelUnfold .56s .2s both; }
+    @keyframes v4PageIn { from { opacity:0; transform: rotateY(-18deg) translateX(80px); } to { opacity:1; transform:none; } }
+    @keyframes v4PageOut { to { opacity:0; transform: rotateY(12deg) translateX(-70px); } }
+    @keyframes v4PageBackIn { from { opacity:0; transform: rotateY(18deg) translateX(-80px); } to { opacity:1; transform:none; } }
+    @keyframes v4PageBackOut { to { opacity:0; transform: rotateY(-12deg) translateX(70px); } }
+    @keyframes v4Stamp { from { opacity:0; transform: scale(1.18) rotate(-3deg); } to { opacity:1; transform:none; } }
+    @keyframes v4InkDrop { from { opacity:0; transform: translateY(24px); filter: blur(5px); } to { opacity:1; transform:none; filter:none; } }
+    @keyframes v4NoteRise { from { opacity:0; transform: translateY(28px) rotate(-1deg); } to { opacity:1; transform:none; } }
+    @keyframes v4CharPeek { from { opacity:0; transform: translateX(70px) rotate(3deg); } to { opacity:1; transform:none; } }
+    @keyframes v4PaperStack { from { opacity:0; transform: translateY(40px) rotate(-1.5deg); } to { opacity:1; transform:none; } }
+    @keyframes v4PanelUnfold { from { opacity:0; transform: scaleY(.78); transform-origin:top center; } to { opacity:1; transform:none; } }
+
+    @media (prefers-reduced-motion: reduce) { .slide, .slide.active, .slide.entering, .slide.exiting, .slide.active *, .slide.active::before, .slide.active::after { animation-duration: .01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; } }
   </style>
 </head>
 <body>
-<div class="stage"><main class="deck">
+<div class="stage" id="root" data-composition-id="claude-code-deepseek-v4" data-start="0" data-duration="8" data-width="1920" data-height="1080"><main class="deck">
   <section class="slide cover active">
     <div class="cover-copy">
       <div class="pill">AI 少年 · DeepSeek 接入实操</div>
@@ -698,16 +730,19 @@
   </section>
 </main></div>
 <script>
-var S=[].slice.call(document.querySelectorAll('.slide')), i=0;
-function show(n){i=(n+S.length)%S.length; S.forEach(function(s,k){s.classList.toggle('active',k===i);});}
-function fit(){var d=document.querySelector('.deck'); var k=Math.min(innerWidth/1920, innerHeight/1080); d.style.transform='scale('+k.toFixed(4)+')';}
-document.addEventListener('keydown',function(e){
-  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){show(i+1);e.preventDefault();}
-  else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){show(i-1);e.preventDefault();}
-});
-document.querySelector('.stage').addEventListener('click',function(e){ if(e.clientX<innerWidth*.25)show(i-1); else show(i+1); });
-addEventListener('resize',fit); addEventListener('load',fit);
-var start=parseInt((location.hash||'').slice(1),10)||1; show(start-1); fit();
+var S=[].slice.call(document.querySelectorAll('.slide')), i=0, animTimer=0;
+var D=document.querySelector('.deck'), B=document.body;
+window.__timelines=window.__timelines||{};
+window.__timelines["claude-code-deepseek-v4"]={duration:function(){return 8;},time:function(){return 0;},pause:function(){},play:function(){},seek:function(){return 0;},totalTime:function(){return 0;}};
+function cleanMotionClasses(s){s.classList.remove('entering','exiting','direction-forward','direction-backward');}
+function paintBg(s){var c=s.getAttribute('data-bg'); if(c){B.style.background=c; B.style.backgroundImage='none';} else if(s.classList.contains('cover-slide')||s.classList.contains('outro-slide')){} }
+function updatePager(){document.querySelectorAll('.pager').forEach(function(w){w.querySelectorAll('i').forEach(function(dot,k){dot.classList.toggle('on',k===i);});});}
+function show(n,animate){var prev=i,next=(n+S.length)%S.length; var dir=(n<prev&&!(prev===S.length-1&&next===0))||(prev===0&&next===S.length-1)?'backward':'forward'; var oldSlide=S[prev],newSlide=S[next]; if(animTimer)clearTimeout(animTimer); S.forEach(cleanMotionClasses); i=next; paintBg(newSlide); fit(); updatePager(); if(!animate||oldSlide===newSlide){S.forEach(function(s,k){s.classList.toggle('active',k===i);}); return;} oldSlide.classList.remove('active'); oldSlide.classList.add('exiting','direction-'+dir); newSlide.classList.add('active','entering','direction-'+dir); animTimer=setTimeout(function(){oldSlide.classList.remove('exiting','direction-'+dir); newSlide.classList.remove('entering');},820);}
+function fit(){var k=Math.min(window.innerWidth/1920,window.innerHeight/1080); D.style.transform='scale('+k.toFixed(4)+')';}
+document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){show(i+1,true);e.preventDefault();}else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){show(i-1,true);e.preventDefault();}});
+document.querySelector('.stage').addEventListener('click',function(e){if(e.target.closest('[data-no-page-turn]'))return; if(e.clientX<window.innerWidth*.25)show(i-1,true);else show(i+1,true);});
+window.addEventListener('resize',fit); window.addEventListener('load',fit);
+var start=parseInt((location.hash||'').slice(1),10)||1; show(start-1,false); fit();
 </script>
 </body>
 </html>

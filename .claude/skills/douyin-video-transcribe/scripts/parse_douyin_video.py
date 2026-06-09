@@ -459,7 +459,7 @@ def sanitize_title_for_dir(title, fallback='video', max_len=50):
 def main():
     parser = argparse.ArgumentParser(description='解析抖音分享链接，下载视频，并转成文字')
     parser.add_argument('url', type=str, help='抖音分享链接')
-    parser.add_argument('--output-dir', type=str, default=None, help='输出目录。在 skill 目录执行时默认落到项目根的 douyin-downloads/<标题>/（标题不可用时回退到视频ID）；否则用当前目录下的 downloads/')
+    parser.add_argument('--output-dir', type=str, default=None, help='输出目录。在 skill 目录执行时默认落到项目根的 <标题>/（标题不可用时回退到视频ID）；否则用当前目录下的 downloads/')
     parser.add_argument('--transcribe', action='store_true', help='是否转文字（需要安装FunASR）')
     parser.add_argument('--model', type=str, default='paraformer-zh', help='ASR模型，默认为 paraformer-zh')
     parser.add_argument('--vad-model', type=str, default='fsmn-vad', help='VAD模型，默认为 fsmn-vad')
@@ -485,8 +485,9 @@ def main():
             # 如果是在skill目录执行，落到项目根目录下、每条视频一个独立子文件夹
             # skill_dir = <project>/.claude/skills/douyin-video-transcribe → 往上三级是项目根
             # 子文件夹名优先用抖音标题（解析后再定），所以这里先只记录基目录
+            # 直接以项目根为基目录：文件夹按视频标题建在项目根下（不再套 douyin-downloads/ 子层）
             project_root = skill_dir.parents[2]
-            auto_base = project_root / "douyin-downloads"
+            auto_base = project_root
         else:
             # 如果不在skill目录，使用当前工作目录（用户正常调用）
             args.output_dir = str(current_cwd / 'downloads')
@@ -519,10 +520,13 @@ def main():
             print(f'UID: {result["author"].get("uid", "")}')
             print(f'头像: {result["author"].get("avatar", "")}')
         
-        # 若处于自动模式，按抖音标题确定子文件夹名（标题不可用时回退到视频ID）
+        # 若处于自动模式，按「作者-标题前20字」确定子文件夹名（都不可用时回退到视频ID）
         if auto_base is not None:
             fallback_id = parse_video_id_from_path(args.url) or 'video'
-            folder_name = sanitize_title_for_dir(result.get('title'), fallback=fallback_id)
+            author_part = sanitize_title_for_dir(result.get('author', {}).get('name'), fallback='', max_len=15)
+            title_part = sanitize_title_for_dir(result.get('title'), fallback='', max_len=20)
+            parts = [p for p in (author_part, title_part) if p]
+            folder_name = '-'.join(parts) if parts else fallback_id
             args.output_dir = str(auto_base / folder_name)
             print('')
             print(f"💡 文件将保存到: {args.output_dir}")

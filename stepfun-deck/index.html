@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>实测 STEP 3.7 Fresh · 自研 Hero Coding 编码流水线</title>
+  <link rel="stylesheet" href="style-claymation.css">
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #efe7d6;
+      background-image: radial-gradient(rgba(255, 255, 255, .45) 1px, transparent 1px);
+      background-size: 8px 8px
+    }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden
+    }
+
+    .deck {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      transform-origin: center center
+    }
+
+    .deck .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: scale(.985);
+      will-change: transform, opacity
+    }
+
+    .deck .slide.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: scale(1);
+      z-index: 2
+    }
+
+    .deck .slide.entering {
+      visibility: visible;
+      z-index: 3
+    }
+
+    .deck .slide.exiting {
+      opacity: 1;
+      visibility: visible;
+      z-index: 1;
+      pointer-events: none
+    }
+
+    .deck .slide.entering.direction-forward {
+      animation: slideInForward .72s cubic-bezier(.18, .9, .22, 1) both
+    }
+
+    .deck .slide.exiting.direction-forward {
+      animation: slideOutForward .72s cubic-bezier(.18, .9, .22, 1) both
+    }
+
+    .deck .slide.entering.direction-backward {
+      animation: slideInBackward .72s cubic-bezier(.18, .9, .22, 1) both
+    }
+
+    .deck .slide.exiting.direction-backward {
+      animation: slideOutBackward .72s cubic-bezier(.18, .9, .22, 1) both
+    }
+
+    .deck .slide.active .shead {
+      animation: rise .55s .05s both
+    }
+
+    .deck .slide.active .sbody {
+      animation: rise .6s .18s both
+    }
+
+    .deck .slide.active .titlebox {
+      animation: rise .6s .12s both
+    }
+
+    .deck .slide.active.cover-slide,
+    .deck .slide.active.outro-slide {
+      animation-name: slideInForward, bgBreathe;
+      animation-duration: .72s, 7s;
+      animation-timing-function: cubic-bezier(.18, .9, .22, 1), ease-in-out;
+      animation-fill-mode: both, both
+    }
+
+    .deck .slide.active.cover-slide.direction-backward,
+    .deck .slide.active.outro-slide.direction-backward {
+      animation-name: slideInBackward, bgBreathe
+    }
+
+    .slide.active.cover-slide::before,
+    .slide.active.outro-slide::before {
+      animation: veilSweep 1.1s .12s cubic-bezier(.2, .8, .2, 1) both
+    }
+
+    .slide.active .bigt {
+      animation: titleDrop .68s .18s cubic-bezier(.2, .9, .18, 1.18) both
+    }
+
+    .slide.active .bigt.s2 {
+      animation-delay: .28s
+    }
+
+    .slide.active .subt {
+      animation: stickerPop .62s .48s cubic-bezier(.16, 1, .22, 1.18) both
+    }
+
+    .slide.active .claycard,
+    .slide.active .rolecard,
+    .slide.active .anatag,
+    .slide.active .storyrow,
+    .slide.active .cfgrow,
+    .slide.active .ptbox {
+      animation: clayPop .58s cubic-bezier(.17, .95, .24, 1.16) both
+    }
+
+    .slide.active .rolecard:nth-child(1),
+    .slide.active .storyrow:nth-child(1),
+    .slide.active .cfgrow:nth-child(1),
+    .slide.active .ptbox:nth-child(1) { animation-delay: .12s }
+    .slide.active .rolecard:nth-child(2),
+    .slide.active .storyrow:nth-child(2),
+    .slide.active .cfgrow:nth-child(2),
+    .slide.active .ptbox:nth-child(2) { animation-delay: .22s }
+    .slide.active .rolecard:nth-child(3),
+    .slide.active .storyrow:nth-child(3),
+    .slide.active .cfgrow:nth-child(3),
+    .slide.active .ptbox:nth-child(3) { animation-delay: .32s }
+    .slide.active .rolecard:nth-child(4),
+    .slide.active .storyrow:nth-child(4) { animation-delay: .42s }
+
+    .slide.active .term {
+      animation: terminalOpen .62s .14s cubic-bezier(.18, .85, .24, 1) both
+    }
+
+    .slide.active .term .l {
+      animation: terminalLine .38s both
+    }
+    .slide.active .term .l:nth-of-type(1) { animation-delay: .42s }
+    .slide.active .term .l:nth-of-type(2) { animation-delay: .52s }
+    .slide.active .term .l:nth-of-type(3) { animation-delay: .62s }
+    .slide.active .term .l:nth-of-type(4) { animation-delay: .72s }
+    .slide.active .term .l:nth-of-type(5) { animation-delay: .82s }
+    .slide.active .term .l:nth-of-type(6) { animation-delay: .92s }
+    .slide.active .term .l:nth-of-type(7) { animation-delay: 1.02s }
+
+    .slide.active .arrow-r {
+      animation: arrowKick .52s 1.0s cubic-bezier(.18, .85, .24, 1.18) both
+    }
+
+    .slide.active .outbox {
+      animation: resultPop .62s 1.12s cubic-bezier(.18, .85, .24, 1.16) both
+    }
+
+    .slide.active .fstep {
+      animation: flowStep .5s cubic-bezier(.18, .85, .24, 1) both
+    }
+    .slide.active .fstep:nth-child(1) { animation-delay: .14s }
+    .slide.active .fstep:nth-child(2) { animation-delay: .26s }
+    .slide.active .fstep:nth-child(3) { animation-delay: .38s }
+    .slide.active .fstep:nth-child(4) { animation-delay: .50s }
+    .slide.active .fstep:nth-child(5) { animation-delay: .62s }
+
+    /* ===== 封面 / 结尾（视觉页：imgen 底图 cover 铺满 + HTML 叠字）===== */
+    .slide.cover-slide,
+    .slide.outro-slide {
+      padding: 0;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start
+    }
+
+    .slide.cover-slide {
+      background: url("assets/cover-bg.png") center center/cover no-repeat
+    }
+
+    .slide.outro-slide {
+      background: url("assets/outro-bg.png") center center/cover no-repeat
+    }
+
+    .slide.cover-slide::before,
+    .slide.outro-slide::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(90deg, rgba(116, 92, 222, .52) 0 42%, rgba(116, 92, 222, .16) 60%, transparent 76%)
+    }
+
+    .tip {
+      margin-top: 44px;
+      text-align: center;
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--purpleD)
+    }
+
+    .titlebox {
+      position: relative;
+      z-index: 2;
+      margin-left: 8.5%;
+      max-width: 62%
+    }
+
+    .pretag {
+      display: inline-block;
+      background: rgba(255, 255, 255, .9);
+      color: var(--purpleD);
+      font-size: 34px;
+      font-weight: 900;
+      padding: 12px 32px;
+      border-radius: 999px;
+      margin-bottom: 26px;
+      box-shadow: 0 10px 18px rgba(60, 40, 140, .25)
+    }
+
+    .bigt {
+      font-size: 100px;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.1;
+      -webkit-text-stroke: 8px #5a3fc0;
+      paint-order: stroke fill;
+      text-shadow: 0 8px 0 rgba(80, 55, 180, .5), 0 14px 22px rgba(60, 40, 140, .42)
+    }
+
+    .bigt .c {
+      color: var(--yellow);
+      -webkit-text-stroke: 8px #c98a14
+    }
+
+    .bigt.s2 {
+      font-size: 64px;
+      margin-top: 10px
+    }
+
+    .subt {
+      display: inline-block;
+      margin-top: 32px;
+      background: #6a4fd0;
+      color: #fff;
+      font-size: 38px;
+      font-weight: 800;
+      padding: 18px 40px;
+      border-radius: 26px;
+      box-shadow: inset 0 4px 9px rgba(255, 255, 255, .25), 0 12px 20px rgba(60, 40, 140, .35)
+    }
+
+    /* ===== 引子两卡 ===== */
+    .twocol {
+      display: flex;
+      gap: 48px;
+      align-items: stretch
+    }
+
+    .twocol .claycard {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 48px 50px
+    }
+
+    .ct-kick {
+      font-size: 34px;
+      font-weight: 900;
+      color: #fff;
+      align-self: flex-start;
+      padding: 10px 30px;
+      border-radius: 18px
+    }
+
+    .kick-purple { background: linear-gradient(160deg, #9b80ee, #7a5ce0) }
+    .kick-orange { background: linear-gradient(160deg, #f5b65c, #e08f2c) }
+
+    .ct-h {
+      font-size: 56px;
+      font-weight: 900;
+      color: var(--ink);
+      line-height: 1.15
+    }
+
+    .ct-d {
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--ink2);
+      line-height: 1.4
+    }
+
+    /* ===== 流水线 flow（需求→跑→代码）===== */
+    .pipeline {
+      display: flex;
+      align-items: stretch;
+      gap: 34px
+    }
+
+    .ptbox {
+      flex: 1;
+      background: var(--cream);
+      border-radius: 36px;
+      padding: 46px 40px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      box-shadow: inset 0 5px 12px rgba(255, 255, 255, .8), inset 0 -8px 16px rgba(170, 150, 110, .16), 0 16px 30px rgba(150, 128, 80, .14)
+    }
+
+    .ptbox.mid {
+      background: linear-gradient(155deg, #9b80ee, #7a5ce0);
+      box-shadow: 0 18px 32px rgba(80, 55, 170, .35), inset 0 5px 12px rgba(255, 255, 255, .25)
+    }
+
+    .ptbox .pic {
+      font-size: 78px;
+      line-height: 1
+    }
+
+    .ptbox .ph {
+      font-size: 44px;
+      font-weight: 900;
+      color: var(--ink)
+    }
+
+    .ptbox.mid .ph,
+    .ptbox.mid .pd { color: #fff }
+
+    .ptbox .pd {
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--ink2);
+      line-height: 1.35
+    }
+
+    .pipe-arrow {
+      align-self: center;
+      font-size: 64px;
+      color: var(--purple);
+      flex: none
+    }
+
+    /* ===== 四角色 grid ===== */
+    .roles {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 30px
+    }
+
+    .rolecard {
+      background: var(--cream);
+      border-radius: 36px;
+      padding: 42px 30px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      box-shadow: inset 0 5px 12px rgba(255, 255, 255, .8), inset 0 -8px 16px rgba(170, 150, 110, .16), 0 16px 30px rgba(150, 128, 80, .14)
+    }
+
+    .role-ic {
+      width: 120px;
+      height: 120px;
+      border-radius: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 62px;
+      color: #fff;
+      box-shadow: inset 0 6px 9px rgba(255, 255, 255, .4), 0 12px 22px rgba(0, 0, 0, .16)
+    }
+
+    .ic-purple { background: linear-gradient(160deg, #9b80ee, #7a5ce0) }
+    .ic-blue { background: linear-gradient(160deg, #72a0f2, #4f7fe0) }
+    .ic-orange { background: linear-gradient(160deg, #f5b65c, #e08f2c) }
+    .ic-pink { background: linear-gradient(160deg, #f483aa, #e05a88) }
+
+    .role-en {
+      font-size: 40px;
+      font-weight: 900;
+      color: var(--ink)
+    }
+
+    .role-cn {
+      font-size: 34px;
+      font-weight: 800;
+      color: var(--purpleD)
+    }
+
+    .role-d {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--ink2);
+      line-height: 1.35
+    }
+
+    /* ===== 配置 list ===== */
+    .cfg {
+      display: flex;
+      flex-direction: column;
+      gap: 26px
+    }
+
+    .cfgrow {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      background: var(--cream);
+      border-radius: 30px;
+      padding: 30px 44px;
+      box-shadow: inset 0 5px 11px rgba(255, 255, 255, .8), inset 0 -6px 12px rgba(170, 150, 110, .16), 0 12px 22px rgba(150, 128, 80, .1)
+    }
+
+    .cfg-k {
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--ink);
+      flex: none;
+      width: 360px
+    }
+
+    .cfg-v {
+      font-size: 38px;
+      font-weight: 900;
+      color: var(--purpleD);
+      font-family: var(--mono, "SF Mono", Menlo, monospace)
+    }
+
+    .cfg-v.hi {
+      color: #fff;
+      background: linear-gradient(160deg, #f5b65c, #e08f2c);
+      padding: 6px 26px;
+      border-radius: 16px
+    }
+
+    /* ===== 需求 + 分析项 ===== */
+    .req-main {
+      background: var(--cream);
+      border-radius: 36px;
+      padding: 44px 54px;
+      box-shadow: inset 0 5px 12px rgba(255, 255, 255, .8), inset 0 -8px 16px rgba(170, 150, 110, .16), 0 16px 30px rgba(150, 128, 80, .14)
+    }
+
+    .req-line {
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--ink);
+      line-height: 1.4
+    }
+
+    .req-line b { color: var(--purpleD) }
+
+    .req-cmd {
+      margin-top: 20px;
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--ink2);
+      line-height: 1.4
+    }
+
+    .req-cmd code {
+      background: #2c2a36;
+      color: #f6c945;
+      padding: 4px 16px;
+      border-radius: 12px;
+      font-family: "SF Mono", Menlo, monospace
+    }
+
+    .ana-title {
+      margin: 34px 0 18px;
+      font-size: 34px;
+      font-weight: 900;
+      color: var(--ink)
+    }
+
+    .anatags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 22px
+    }
+
+    .anatag {
+      font-size: 36px;
+      font-weight: 800;
+      color: #fff;
+      padding: 14px 34px;
+      border-radius: 26px;
+      box-shadow: 0 8px 14px rgba(0, 0, 0, .14), inset 0 3px 6px rgba(255, 255, 255, .3)
+    }
+
+    .anatag.p { background: linear-gradient(160deg, #9b80ee, #7a5ce0) }
+    .anatag.b { background: linear-gradient(160deg, #72a0f2, #4f7fe0) }
+    .anatag.g { background: linear-gradient(160deg, #74c474, #4fa84f) }
+    .anatag.o { background: linear-gradient(160deg, #f5b65c, #e08f2c) }
+
+    /* ===== Planner manifest ===== */
+    .flow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 26px 44px
+    }
+
+    .fstep {
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      background: var(--cream);
+      border-radius: 30px;
+      padding: 28px 38px;
+      box-shadow: inset 0 5px 11px rgba(255, 255, 255, .8), inset 0 -6px 12px rgba(170, 150, 110, .16), 0 12px 22px rgba(150, 128, 80, .1)
+    }
+
+    .fn {
+      width: 72px;
+      height: 72px;
+      flex: none;
+      border-radius: 50%;
+      background: linear-gradient(160deg, #9b80ee, #7a5ce0);
+      color: #fff;
+      font-size: 36px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 4px 7px rgba(255, 255, 255, .4), 0 8px 14px rgba(90, 60, 200, .3)
+    }
+
+    .ft {
+      font-size: 35px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.25
+    }
+
+    .ft b { color: var(--purpleD) }
+
+    /* ===== 为什么拆 · 三点 ===== */
+    .why {
+      display: flex;
+      flex-direction: column;
+      gap: 28px
+    }
+
+    .whyrow {
+      display: flex;
+      align-items: center;
+      gap: 34px;
+      background: var(--cream);
+      border-radius: 32px;
+      padding: 34px 46px;
+      box-shadow: inset 0 5px 11px rgba(255, 255, 255, .8), inset 0 -6px 12px rgba(170, 150, 110, .16), 0 12px 22px rgba(150, 128, 80, .1)
+    }
+
+    .why-ic {
+      font-size: 60px;
+      flex: none
+    }
+
+    .why-t {
+      font-size: 40px;
+      font-weight: 800;
+      color: var(--ink);
+      line-height: 1.3
+    }
+
+    .why-t b { color: var(--greenD) }
+
+    /* ===== Review 闭环 ===== */
+    .stories {
+      display: flex;
+      flex-direction: column;
+      gap: 22px
+    }
+
+    .storyrow {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      background: var(--cream);
+      border-radius: 28px;
+      padding: 24px 40px;
+      box-shadow: inset 0 5px 11px rgba(255, 255, 255, .8), inset 0 -6px 12px rgba(170, 150, 110, .16), 0 12px 20px rgba(150, 128, 80, .1)
+    }
+
+    .story-id {
+      font-size: 36px;
+      font-weight: 900;
+      color: var(--purpleD);
+      font-family: "SF Mono", Menlo, monospace;
+      flex: none;
+      width: 360px;
+      white-space: nowrap
+    }
+
+    .rounds {
+      display: flex;
+      gap: 12px;
+      flex: none;
+      width: 250px
+    }
+
+    .rdot {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 900;
+      color: #fff
+    }
+
+    .rdot.pass { background: linear-gradient(160deg, #74c474, #4fa84f) }
+    .rdot.redo { background: linear-gradient(160deg, #f483aa, #e05a88) }
+
+    .story-d {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--ink2);
+      line-height: 1.3
+    }
+
+    .story-d b { color: var(--ink) }
+
+    .loop-tip {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 34px;
+      font-weight: 800;
+      color: var(--pinkD)
+    }
+
+    .loop-tip b { color: var(--purpleD) }
+
+    /* ===== 终端页 ===== */
+    .term .l.cmd { margin-top: 6px }
+    .term .l b { color: #f6c945 }
+    .term .tok { color: #b59cf5 }
+    .term .dim { color: #8a86a0 }
+
+    .verbig {
+      font-size: 116px;
+      line-height: 1;
+      color: var(--greenD);
+      text-align: center;
+      filter: drop-shadow(0 8px 10px rgba(63, 154, 63, .3))
+    }
+
+    .bigpct {
+      font-size: 110px;
+      font-weight: 900;
+      line-height: 1;
+      color: var(--greenD);
+      text-align: center;
+      -webkit-text-stroke: 5px #fff;
+      paint-order: stroke fill
+    }
+
+    .okline {
+      text-align: center;
+      font-size: 38px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.45;
+      margin-top: 18px
+    }
+
+    .okline b { color: var(--greenD) }
+
+    /* ===== 报告输出 ===== */
+    .report {
+      background: var(--cream);
+      border-radius: 30px;
+      padding: 34px 40px;
+      box-shadow: inset 0 5px 12px rgba(170, 150, 110, .16);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      flex: 1
+    }
+
+    .rep-h {
+      font-size: 34px;
+      font-weight: 900;
+      color: var(--purpleD);
+      margin-bottom: 6px
+    }
+
+    .rep-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--ink)
+    }
+
+    .rep-name {
+      flex: none;
+      width: 360px;
+      font-family: "SF Mono", Menlo, monospace
+    }
+
+    .rbar {
+      flex: 1;
+      height: 26px;
+      border-radius: 999px;
+      background: #e3dccb;
+      overflow: hidden
+    }
+
+    .rbar i {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #5fb85f, #8ad88a)
+    }
+
+    .rep-pct {
+      flex: none;
+      width: 110px;
+      text-align: right;
+      color: var(--greenD);
+      font-weight: 900
+    }
+
+    /* ===== 结尾 mini ===== */
+    .mini {
+      display: flex;
+      gap: 20px;
+      margin-top: 28px
+    }
+
+    .mini div {
+      padding: 16px 30px;
+      border-radius: 22px;
+      font-size: 30px;
+      font-weight: 900;
+      color: #fff;
+      background: rgba(106, 79, 208, .85);
+      box-shadow: 0 10px 18px rgba(60, 40, 140, .3)
+    }
+
+    .mini div::before { content: "✓ "; color: #b6f0b6 }
+
+    /* ===== 页脚 ===== */
+    .pager {
+      position: absolute;
+      left: 90px;
+      bottom: 44px;
+      display: flex;
+      gap: 12px;
+      z-index: 4
+    }
+
+    .pager i {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: rgba(106, 79, 208, .25);
+      display: block;
+      transition: all .3s
+    }
+
+    .pager i.on {
+      width: 42px;
+      border-radius: 999px;
+      background: var(--purpleD)
+    }
+
+    .brand {
+      position: absolute;
+      right: 90px;
+      bottom: 40px;
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--purpleD);
+      z-index: 4
+    }
+
+    .cover-slide .brand,
+    .outro-slide .brand {
+      color: #fff;
+      text-shadow: 0 3px 10px rgba(60, 40, 140, .6)
+    }
+
+    @keyframes slideInForward { from { opacity: 0; transform: translateX(120px) scale(.965) } to { opacity: 1; transform: translateX(0) scale(1) } }
+    @keyframes slideOutForward { from { opacity: 1; transform: translateX(0) scale(1) } to { opacity: 0; transform: translateX(-92px) scale(.975) } }
+    @keyframes slideInBackward { from { opacity: 0; transform: translateX(-120px) scale(.965) } to { opacity: 1; transform: translateX(0) scale(1) } }
+    @keyframes slideOutBackward { from { opacity: 1; transform: translateX(0) scale(1) } to { opacity: 0; transform: translateX(92px) scale(.975) } }
+    @keyframes bgBreathe { 0% { background-size: 103% auto } 100% { background-size: 106% auto } }
+    @keyframes veilSweep { from { opacity: .55; transform: translateX(-7%) } to { opacity: 1; transform: translateX(0) } }
+    @keyframes titleDrop { from { opacity: 0; transform: translateY(-34px) rotate(-1.2deg) } to { opacity: 1; transform: translateY(0) rotate(0) } }
+    @keyframes stickerPop { from { opacity: 0; transform: translateY(26px) scale(.82) rotate(-2deg) } to { opacity: 1; transform: translateY(0) scale(1) rotate(0) } }
+    @keyframes clayPop { from { opacity: 0; transform: translateY(46px) scale(.9) } to { opacity: 1; transform: translateY(0) scale(1) } }
+    @keyframes terminalOpen { from { opacity: 0; transform: translateY(38px) scale(.96); clip-path: inset(0 0 92% 0 round 34px) } to { opacity: 1; transform: translateY(0) scale(1); clip-path: inset(0 0 0 0 round 34px) } }
+    @keyframes terminalLine { from { opacity: 0; transform: translateX(-18px) } to { opacity: 1; transform: translateX(0) } }
+    @keyframes arrowKick { from { opacity: 0; transform: translateX(-36px) scale(.72) } to { opacity: 1; transform: translateX(0) scale(1) } }
+    @keyframes resultPop { from { opacity: 0; transform: translateX(42px) scale(.9) } to { opacity: 1; transform: translateX(0) scale(1) } }
+    @keyframes flowStep { from { opacity: 0; transform: translateY(32px) scale(.94) } to { opacity: 1; transform: translateY(0) scale(1) } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .deck .slide, .deck .slide.active, .deck .slide.entering, .deck .slide.exiting, .slide.active *, .slide.active::before {
+        animation-duration: .01ms !important;
+        animation-delay: 0ms !important;
+        animation-iteration-count: 1 !important
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="stage" id="root" data-composition-id="stepfun-hero-coding" data-start="0" data-duration="8"
+    data-width="1920" data-height="1080">
+    <div class="deck">
+
+      <!-- ============ 1 · 封面（视觉页）============ -->
+      <div class="slide cover-slide active" data-bg="#7d63c8">
+        <div class="titlebox">
+          <span class="pretag">AI 少年 · 模型实测</span>
+          <div class="bigt">实测 <span class="c">STEP 3.7 Fresh</span></div>
+          <div class="bigt s2">× 自研 Hero Coding 编码流水线</div>
+          <div><span class="subt">全自动多智能体 · 一条龙跑通一个 CLI 工具</span></div>
+        </div>
+        <div class="brand">@AI 少年</div>
+      </div>
+
+      <!-- ============ 2 · 选题引子 ============ -->
+      <div class="slide">
+        <div class="shead">
+          <div class="badge b-purple">▶</div>
+          <div class="htitle t-purple">全网在推的小模型，我来实测</div>
+        </div>
+        <div class="sbody">
+          <div class="twocol">
+            <div class="claycard">
+              <span class="ct-kick kick-purple">主角 · 模型</span>
+              <div class="ct-h">STEP 3.7 Fresh</div>
+              <div class="ct-d">社交平台上不少 AI 博主都在推的模型，<br>主打「专注生产、跑 Agent」的专属 model。</div>
+            </div>
+            <div class="claycard">
+              <span class="ct-kick kick-orange">擂台 · 工具</span>
+              <div class="ct-h">Hero Coding</div>
+              <div class="ct-d">我之前自研的一套全自动编码流水线，<br>基于 Python，专门用来压测一个模型行不行。</div>
+            </div>
+          </div>
+        </div>
+        <div class="pager"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="brand">@AI 少年</div>
+      </div>
+
+      <!-- ============ 3 · 什么是 Hero Coding ============ -->
+      <div class="slide">
+        <div class="shead">
+          <div class="badge b-blue">1</div>
+          <div class="htitle t-blue">什么是 Hero Coding</div>
+        </div>
+        <div class="sbody">
+          <div class="pipeline">
+            <div class="ptbox">
+              <div class="pic">📄</div>
+              <div class="ph">一份需求</div>
+              <div class="pd">Markdown 需求文档<br>丢给流水线</div>
+            </div>
+            <div class="pipe-arrow">➜</div>
+            <div class="ptbox mid">
+              <div class="pic">⚙️</div>
+              <div class="ph">全自动跑</div>
+              <div class="pd">中间无人接力<br>无人参与，一跑到底</div>
+            </div>
+            <div class="pipe-arrow">➜</div>
+            <div class="ptbox">
+              <div class="pic">✅</div>
+              <div class="ph">可运行代码</div>
+              <div class="pd">直接产出一个<br>能跑的 CLI 工具</div>
+            </div>
+          </div>
+          <div class="tip" style="margin-top:46px">一条「需求进 → 代码出」的自动化编码流水线</div>
+        </div>
+        <div class="pager"><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="brand">@AI 少年</div>
+      </div>
+
+      <!-- ============ 4 · 四个角色 ============ -->
+      <div class="slide">
+        <div class="shead">
+          <div class="badge b-pink">2</div>
+          <div class="htitle t-pink">同一个模型 · 跑四个角色</div>
+        </div>
+        <div class="sbody">
+          <div class="roles">
+            <div class="rolecard">
+              <div class="role-ic ic-purple">🧭</div>
+              <div class="role-en">Planner</div>
+              <div class="role-cn">规划拆解</div>
+              <div class="role-d">把需求拆成<br>一个个小任务</div>
+            </div>
+            <div class="rolecard">
+              <div class="role-ic ic-blue">⌨️</div>
+              <div class="role-en">Worker</div>
+              <div class="role-cn">写代码</div>
+              <div class="role-d">按任务<br>逐个实现功能</div>
+            </div>
+            <div class="rolecard">
+              <div class="role-ic ic-orange">🧪</div>
+              <div class="role-en">Verifier</div>
+              <div class="role-cn">跑测试</div>
+              <div class="role-d">执行校验脚本<br>看结果对不对</div>
+            </div>
+            <div class="rolecard">
+              <div class="role-ic ic-pink">🔍</div>
+              <div class="role-en">Reviewer</div>
+              <div class="role-cn">审代码</div>
+              <div class="role-d">挑出问题<br>反馈给 Worker</div>
+            </div>
+          </div>
+          <div class="tip" style="margin-top:42px">多 Agent 互相检查问题 → 任何模型都能拿到较高准确性</div>
+        </div>
+        <div class="pager"><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="brand">@AI 少年</div>
+      </div>
+
+      <!-- ============ 5 · 跑前设置 ============ -->
+      <div class="slide">
+        <div class="shead">
+          <div class="badge b-orange">3</div>
+          <div class="htitle t-orange">跑前的设置</div>
+        </div>
+        <div class="sbody">
+          <div class="cfg">
+            <div class="cfgrow">
+              <div class="cfg-k">Base URL</div>
+              <div class="cfg-v">STEP 3.7 Fresh 接口地址</div>
+            </div>
+            <div class="cfgrow">
+              <div class="cfg-k">默认模型</div>
+              <div class="cfg-v">step-3.7-fresh</div>
+            </div>
+            <div class="cfgrow">
+              <div class="cfg-k">Reasoning Effort</div>
+              <div class="cfg-v hi">high · 高级别</div>
+            </div>
+          </div>
+          <div class="tip" style="margin-top:42px">目标：不挑模型，都要有较高准确性</div>
+        </div>
+        <div class="pager"><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="brand">@AI 少年</div>
+      </div>
+
+      <!-- ============ 6 · 实测需求 ============ -->
+      <div class="slide">
+        <div class="shead">
+          <div class="badge b-green">4</div>
+          <div class="htitle t-green">实测需求 · Agent 日志分析器</div>
+        </div>
+        <div class="sbody">
+          <div class="req-main">
+            <div class="req-line">写一个简单的 <b>Agent 运行日志分析器</b>（CLI 工具）</div>
+            <div class="req-cmd">传入一个日志路径 <code>analyze &lt;log路径&gt;</code> → 直接输出一份纯代码分析的汇总报告</div>
+          </div>
+          <div class="ana-title">报告要分析出 ——</div>
+          <div class="anatags">
+            <span class="anatag p">每个 Agent 调用次数</span>
+            <span class="anatag b">成功率</span>
+            <span class="anatag g">Token 消耗</span>
+            <span class="anatag o">异常处理</span>
+          </div>
+        </div>
+        <div class="pager"><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="brand">@AI 少年</div>
+      </div>
+
+      <!-- ============ 7 · Planner 拆 User Story ============ -->
+      <div class="slide">
+        <div class="shead">
+          <div class="badge b-purple">5</div>
+          <div class="htitle t-purple">Planner：拆 7 份 User Story</div>
+        </div>
+        <div class="sbody">
+          <div class="flow">
+            <div class="fstep"><div class="fn">1</div><div class="ft">需求拆成 <b>7 份 User Story</b></div></div>
+            <div class="fstep"><div class="fn">2</div><div class="ft">每份带：目标 / Acceptance Criteria</div></div>
+            <div class="fstep"><div class="fn">3</div><div class="ft">生成 <b>Manifest</b>（DAG 编排调度）</div></div>
+            <div class="fstep"><div class="fn">4</div><div class="ft">写好优先顺序 + <b>依赖关系</b>（depends on）</div></div>
+            <div class="fstep"><div class="fn">5</div><div class="ft">每个 Story 配一份 <b>Verify 脚本</b>检查</div></div>
+          </div>
+          <div class="tip" style="margin-top:38px">Worker 按 Manifest，依次实现 CLI 的每个功能</div>
+        </div>
+        <div class="pager"><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="brand">@AI 少年</div>
+      </div>
+
+      <!-- ============ 8 · 为什么拆这么细 ============ -->
+      <div class="slide">
+        <div class="shead">
+          <div class="badge b-blue">6</div>
+          <div class="htitle t-blue">为什么要拆这么细</div>
+        </div>
+        <div class="sbody">
+          <div class="why">
+            <div class="whyrow">
+              <div class="why-ic">🧩</div>
+              <div class="why-t">每次任务内容<b>更单元化、更小</b></div>
+            </div>
+            <div class="whyrow">
+              <div class="why-ic">🎯</div>
+              <div class="why-t">让 Agent 能<b>专注</b>跑好单个任务</div>
+            </div>
+            <div class="whyrow">
+              <div class="why-ic">🍃</div>
+              <div class="why-t">特别适合 Fresh 3.7 这种<b>小模型</b>，又能保住<b>可靠性</b></div>
+            </div>
+          </div>
+        </div>
+        <div class="pager"><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="brand">@AI 少年</div>
+      </div>
+
+      <!-- ============ 9 · Review 闭环 ============ -->
+      <div class="slide">
+        <div class="shead">
+          <div class="badge b-pink">7</div>
+          <div class="htitle t-pink">Review 闭环：审不过就重跑</div>
+        </div>
+        <div class="sbody">
+          <div class="stories">
+            <div class="storyrow">
+              <div class="story-id">Story 001 / 002</div>
+              <div class="rounds"><span class="rdot pass">✓</span></div>
+              <div class="story-d">一轮跑通，<b>无需 Reviewer 反馈</b></div>
+            </div>
+            <div class="storyrow">
+              <div class="story-id">Story 003 / 004</div>
+              <div class="rounds"><span class="rdot redo">1</span><span class="rdot pass">✓</span></div>
+              <div class="story-d">第一轮发现 Bug → <b>跑了两轮</b>才过</div>
+            </div>
+            <div class="storyrow">
+              <div class="story-id">Story 006</div>
+              <div class="rounds"><span class="rdot redo">1</span><span class="rdot redo">2</span><span class="rdot pass">✓</span></div>
+              <div class="story-d">内容更多，<b>审出三次问题</b>，全部完美解决</div>
+            </div>
+          </div>
+          <div class="loop-tip">Reviewer 发现问题 → <b>Feedback 写回文档</b> → Worker 重新读取 → 再跑一轮</div>
+        </div>
+        <div class="pager"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i></div>
+        <div class="brand">@AI 少年</div>
+      </div>
+
+      <!-- ============ 10 · 运行日志 & Token（终端页）============ -->
+      <div class="slide">
+        <div class="shead">
+          <div class="badge b-orange">8</div>
+          <div class="htitle t-orange">跑通日志 · Token 全记录</div>
+        </div>
+        <div class="sbody">
+          <div class="term-wrap">
+            <div class="term">
+              <div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+              <div class="l"><span class="p">›</span> Worker · Run 1 启动</div>
+              <div class="l">model = <b>step-3.7-flash</b></div>
+              <div class="l"><span class="tok">prompt_tokens</span> · <span class="tok">completion_tokens</span> · <span class="tok">total_tokens</span></div>
+              <div class="l dim">Verifier：命令执行，不耗 Token → 跳过</div>
+              <div class="l g">Reviewer summary → done ✓</div>
+              <div class="l cmd"><span class="p">›</span> Worker 2 继续下一个 Story…</div>
+            </div>
+            <div class="arrow-r">➜</div>
+            <div class="outbox">
+              <div class="bigpct">90%+</div>
+              <div class="okline">后台看 <b>Cache 命中率</b><br>几乎都在 90% 以上</div>
+            </div>
+          </div>
+        </div>
+        <div class="pager"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i></div>
+        <div class="brand">@AI 少年</div>
+      </div>
+
+      <!-- ============ 11 · 最终成果（终端 + 报告）============ -->
+      <div class="slide">
+        <div class="shead">
+          <div class="badge b-green">9</div>
+          <div class="htitle t-green">CLI 跑通 · 瞬间出报告</div>
+        </div>
+        <div class="sbody">
+          <div class="term-wrap">
+            <div class="term">
+              <div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+              <div class="l cmd"><span class="p">$</span> analyze run.log</div>
+              <div class="l g">✓ 报告瞬间生成</div>
+              <div class="report">
+                <div class="rep-h">各 Agent 成功率</div>
+                <div class="rep-row"><span class="rep-name">service-agent</span><span class="rbar"><i style="width:96%"></i></span><span class="rep-pct">96%</span></div>
+                <div class="rep-row"><span class="rep-name">data-pipeline</span><span class="rbar"><i style="width:91%"></i></span><span class="rep-pct">91%</span></div>
+                <div class="rep-row"><span class="rep-name">customer-support</span><span class="rbar"><i style="width:88%"></i></span><span class="rep-pct">88%</span></div>
+              </div>
+            </div>
+            <div class="arrow-r">➜</div>
+            <div class="outbox">
+              <div class="verbig">✓</div>
+              <div class="okline">CLI 工具<br><b>完整运行成功</b></div>
+            </div>
+          </div>
+        </div>
+        <div class="pager"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i></div>
+        <div class="brand">@AI 少年</div>
+      </div>
+
+      <!-- ============ 12 · 结尾（视觉页）============ -->
+      <div class="slide outro-slide" data-bg="#7d63c8">
+        <div class="titlebox">
+          <span class="pretag">实测结论</span>
+          <div class="bigt">Fresh 3.7<br><span class="c">扛住了</span></div>
+          <div class="mini"><div>四角色跑通</div><div>审错能重跑</div><div>报告秒出</div></div>
+          <div><span class="subt">小模型 + 好编排 = 能打 · 关注 AI 少年 👋</span></div>
+        </div>
+        <div class="brand">@AI 少年</div>
+      </div>
+
+    </div>
+  </div>
+  <script>
+    var S = [].slice.call(document.querySelectorAll('.slide')), i = 0, B = document.body, D = document.querySelector('.deck');
+    var animTimer = 0;
+    window.__timelines = window.__timelines || {};
+    window.__timelines["stepfun-hero-coding"] = {
+      duration: function () { return 8; },
+      time: function () { return 0; },
+      pause: function () { },
+      play: function () { },
+      seek: function () { return 0; },
+      totalTime: function () { return 0; }
+    };
+    function paintBg(s) {
+      var c = s.getAttribute('data-bg');
+      var full = s.classList.contains('cover-slide') || s.classList.contains('outro-slide');
+      if (full && c) { B.style.background = c; B.style.backgroundImage = 'none'; }
+      else {
+        B.style.background = '#efe7d6';
+        B.style.backgroundImage = 'radial-gradient(rgba(255,255,255,.45) 1px,transparent 1px)';
+        B.style.backgroundSize = '8px 8px';
+      }
+    }
+    function fit() {
+      var s = S[i], rw = window.innerWidth / 1920, rh = window.innerHeight / 1080;
+      var full = s.classList.contains('cover-slide') || s.classList.contains('outro-slide');
+      var k = full ? Math.max(rw, rh) : Math.min(rw, rh);
+      D.style.transform = 'scale(' + k.toFixed(4) + ')';
+    }
+    function cleanMotionClasses(s) {
+      s.classList.remove('entering', 'exiting', 'direction-forward', 'direction-backward');
+    }
+    function show(n, animate) {
+      var prev = i;
+      var next = (n + S.length) % S.length;
+      var dir = (n < prev && !(prev === S.length - 1 && next === 0)) || (prev === 0 && next === S.length - 1) ? 'backward' : 'forward';
+      var oldSlide = S[prev], newSlide = S[next];
+      if (animTimer) clearTimeout(animTimer);
+      S.forEach(function (s) { cleanMotionClasses(s); });
+      i = next;
+      paintBg(newSlide);
+      fit();
+      if (!animate || oldSlide === newSlide) {
+        S.forEach(function (s, k) { s.classList.toggle('active', k === i); });
+        return;
+      }
+      oldSlide.classList.remove('active');
+      oldSlide.classList.add('exiting', 'direction-' + dir);
+      newSlide.classList.add('active', 'entering', 'direction-' + dir);
+      animTimer = setTimeout(function () {
+        oldSlide.classList.remove('exiting', 'direction-' + dir);
+        newSlide.classList.remove('entering');
+      }, 760);
+    }
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { show(i + 1, true); e.preventDefault(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { show(i - 1, true); e.preventDefault(); }
+    });
+    document.querySelector('.stage').addEventListener('click', function (e) {
+      if (e.clientX < window.innerWidth * 0.25) show(i - 1, true); else show(i + 1, true);
+    });
+    window.addEventListener('resize', fit); window.addEventListener('load', fit);
+    var start = parseInt((location.hash || '').slice(1)) || 1; show(start - 1, false); fit();
+  </script>
+</body>
+
+</html>

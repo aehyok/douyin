@@ -404,10 +404,44 @@
     .outro-slide::before {
       background: linear-gradient(90deg, rgba(240,248,245,.95) 0 42%, rgba(240,248,245,.62) 58%, transparent 76%);
     }
+    /* hf-motion-v3: ???????????????????? */
+    .deck .slide { pointer-events:none; will-change: transform, opacity, filter; transition:none; }
+    .deck .slide.active { pointer-events:auto; }
+    .deck .slide.entering { visibility:visible; z-index:3; }
+    .deck .slide.exiting { opacity:1; visibility:visible; z-index:1; pointer-events:none; }
+    .deck .slide.entering.direction-forward { animation:v3TrackIn .66s cubic-bezier(.2,.8,.2,1) both; }
+    .deck .slide.exiting.direction-forward { animation:v3TrackOut .66s cubic-bezier(.2,.8,.2,1) both; }
+    .deck .slide.entering.direction-backward { animation:v3TrackBackIn .66s cubic-bezier(.2,.8,.2,1) both; }
+    .deck .slide.exiting.direction-backward { animation:v3TrackBackOut .66s cubic-bezier(.2,.8,.2,1) both; }
+    .slide.active .eyebrow { animation:v3LabelIn .42s .1s both; }
+    .slide.active .main-title, .slide.active .htitle { animation:v3TitleScan .58s .18s both; }
+    .slide.active .cover-sub { animation:v3SubIn .45s .42s both; }
+    .slide.active .step-card, .slide.active .panel, .slide.active .flow-card, .slide.active .download-card { animation:v3TileSlide .48s cubic-bezier(.2,.8,.2,1) both; }
+    .slide.active .step-card:nth-child(1), .slide.active .flow-card:nth-child(1) { animation-delay:.15s; }
+    .slide.active .step-card:nth-child(2), .slide.active .flow-card:nth-child(2) { animation-delay:.24s; }
+    .slide.active .step-card:nth-child(3), .slide.active .flow-card:nth-child(3) { animation-delay:.33s; }
+    .slide.active .step-card:nth-child(4), .slide.active .flow-card:nth-child(4) { animation-delay:.42s; }
+    .slide.active .terminal { animation:v3ConsoleWipe .58s .22s both; }
+    .slide.active .cmd { animation:v3TextFocus .58s .48s both; }
+    .slide.active .check, .slide.active .result-strip { animation:v3CheckIn .34s ease both; }
+    .slide.active .check:nth-child(1){animation-delay:.46s}.slide.active .check:nth-child(2){animation-delay:.56s}.slide.active .check:nth-child(3){animation-delay:.66s}.slide.active .result-strip{animation-delay:.76s}
+    @keyframes v3TrackIn { from { opacity:0; transform: translateX(170px) scale(.985); filter: blur(8px); } to { opacity:1; transform:none; filter:none; } }
+    @keyframes v3TrackOut { to { opacity:0; transform: translateX(-120px) scale(.985); filter: blur(5px); } }
+    @keyframes v3TrackBackIn { from { opacity:0; transform: translateX(-170px) scale(.985); filter: blur(8px); } to { opacity:1; transform:none; filter:none; } }
+    @keyframes v3TrackBackOut { to { opacity:0; transform: translateX(120px) scale(.985); filter: blur(5px); } }
+    @keyframes v3LabelIn { from { opacity:0; transform: translateX(-28px); } to { opacity:1; transform:none; } }
+    @keyframes v3TitleScan { from { opacity:0; clip-path: inset(0 100% 0 0); transform: translateY(14px); } to { opacity:1; clip-path: inset(0 0 0 0); transform:none; } }
+    @keyframes v3SubIn { from { opacity:0; transform: translateY(22px); } to { opacity:1; transform:none; } }
+    @keyframes v3TileSlide { from { opacity:0; transform: translateX(54px); } to { opacity:1; transform:none; } }
+    @keyframes v3ConsoleWipe { from { opacity:0; clip-path: inset(0 100% 0 0 round 28px); } to { opacity:1; clip-path: inset(0 0 0 0 round 28px); } }
+    @keyframes v3TextFocus { from { opacity:.25; filter: blur(6px); } to { opacity:1; filter:none; } }
+    @keyframes v3CheckIn { from { opacity:0; transform: translateX(-20px); } to { opacity:1; transform:none; } }
+
+    @media (prefers-reduced-motion: reduce) { .slide, .slide.active, .slide.entering, .slide.exiting, .slide.active *, .slide.active::before, .slide.active::after { animation-duration: .01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; } }
   </style>
 </head>
 <body>
-<div class="stage"><div class="deck">
+<div class="stage" id="root" data-composition-id="claude-code-deepseek-v3" data-start="0" data-duration="8" data-width="1920" data-height="1080"><div class="deck">
 
   <section class="slide cover-slide active">
     <div class="titlebox">
@@ -598,18 +632,19 @@
 
 </div></div>
 <script>
-var S=[].slice.call(document.querySelectorAll('.slide')), i=0;
-function show(n){i=(n+S.length)%S.length; S.forEach(function(s,k){s.classList.toggle('active',k===i);});}
-function fit(){var d=document.querySelector('.deck'); var k=Math.min(window.innerWidth/1920, window.innerHeight/1080); d.style.transform='scale('+k.toFixed(4)+')';}
-document.addEventListener('keydown',function(e){
-  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){show(i+1);e.preventDefault();}
-  else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){show(i-1);e.preventDefault();}
-});
-document.querySelector('.stage').addEventListener('click',function(e){
-  if(e.clientX<window.innerWidth*.25)show(i-1); else show(i+1);
-});
+var S=[].slice.call(document.querySelectorAll('.slide')), i=0, animTimer=0;
+var D=document.querySelector('.deck'), B=document.body;
+window.__timelines=window.__timelines||{};
+window.__timelines["claude-code-deepseek-v3"]={duration:function(){return 8;},time:function(){return 0;},pause:function(){},play:function(){},seek:function(){return 0;},totalTime:function(){return 0;}};
+function cleanMotionClasses(s){s.classList.remove('entering','exiting','direction-forward','direction-backward');}
+function paintBg(s){var c=s.getAttribute('data-bg'); if(c){B.style.background=c; B.style.backgroundImage='none';} else if(s.classList.contains('cover-slide')||s.classList.contains('outro-slide')){} }
+function updatePager(){document.querySelectorAll('.pager').forEach(function(w){w.querySelectorAll('i').forEach(function(dot,k){dot.classList.toggle('on',k===i);});});}
+function show(n,animate){var prev=i,next=(n+S.length)%S.length; var dir=(n<prev&&!(prev===S.length-1&&next===0))||(prev===0&&next===S.length-1)?'backward':'forward'; var oldSlide=S[prev],newSlide=S[next]; if(animTimer)clearTimeout(animTimer); S.forEach(cleanMotionClasses); i=next; paintBg(newSlide); fit(); updatePager(); if(!animate||oldSlide===newSlide){S.forEach(function(s,k){s.classList.toggle('active',k===i);}); return;} oldSlide.classList.remove('active'); oldSlide.classList.add('exiting','direction-'+dir); newSlide.classList.add('active','entering','direction-'+dir); animTimer=setTimeout(function(){oldSlide.classList.remove('exiting','direction-'+dir); newSlide.classList.remove('entering');},820);}
+function fit(){var k=Math.min(window.innerWidth/1920,window.innerHeight/1080); D.style.transform='scale('+k.toFixed(4)+')';}
+document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){show(i+1,true);e.preventDefault();}else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){show(i-1,true);e.preventDefault();}});
+document.querySelector('.stage').addEventListener('click',function(e){if(e.target.closest('[data-no-page-turn]'))return; if(e.clientX<window.innerWidth*.25)show(i-1,true);else show(i+1,true);});
 window.addEventListener('resize',fit); window.addEventListener('load',fit);
-var start=parseInt((location.hash||'').slice(1))||1; show(start-1); fit();
+var start=parseInt((location.hash||'').slice(1),10)||1; show(start-1,false); fit();
 </script>
 </body>
 </html>

@@ -315,10 +315,44 @@
     .pager i.on { width: 44px; border-radius: 999px; background: var(--lav); }
     .brand { position: absolute; right: 104px; bottom: 50px; font-size: 26px; font-weight: 900; color: var(--lav-d);
       text-shadow: 0 2px 8px rgba(255,255,255,0.5); z-index: 4; }
+    /* hf-motion-v7: ?? 3D ?????????? */
+    .deck { perspective: 1800px; }
+    .slide { pointer-events:none; will-change: transform, opacity, filter; transition:none; transform-style:preserve-3d; }
+    .slide.active { pointer-events:auto; }
+    .slide.entering { visibility:visible; z-index:3; }
+    .slide.exiting { opacity:1; visibility:visible; z-index:1; pointer-events:none; }
+    .slide.entering.direction-forward { animation:v7FlipIn .78s cubic-bezier(.16,.85,.2,1) both; }
+    .slide.exiting.direction-forward { animation:v7FlipOut .78s cubic-bezier(.16,.85,.2,1) both; }
+    .slide.entering.direction-backward { animation:v7FlipBackIn .78s cubic-bezier(.16,.85,.2,1) both; }
+    .slide.exiting.direction-backward { animation:v7FlipBackOut .78s cubic-bezier(.16,.85,.2,1) both; }
+    .slide.active .glass { animation:v7GlassFloat .7s cubic-bezier(.16,.85,.2,1) both; }
+    .slide.active .glass:nth-child(2) { animation-delay:.16s; }
+    .slide.active .glass:nth-child(3) { animation-delay:.26s; }
+    .slide.active .glass:nth-child(4) { animation-delay:.36s; }
+    .slide.active .pill { animation:v7DepthChip .48s .12s both; }
+    .slide.active .bigt, .slide.active .htitle { animation:v7NeonTitle .66s .18s both; }
+    .slide.active .subt, .slide.active .pager, .slide.active .brand { animation:v7DepthChip .5s .48s both; }
+    .slide.active .portrait { animation:v7PortraitTurn .82s .24s both; }
+    .slide.active .stepc, .slide.active .reqcard, .slide.active .dlcard, .slide.active .fstep, .slide.active .outbox { animation:v7GlassFloat .56s both; }
+    .slide.active .stepc:nth-child(1), .slide.active .fstep:nth-child(1){animation-delay:.12s}.slide.active .stepc:nth-child(2), .slide.active .fstep:nth-child(2){animation-delay:.22s}.slide.active .stepc:nth-child(3), .slide.active .fstep:nth-child(3){animation-delay:.32s}.slide.active .stepc:nth-child(4), .slide.active .fstep:nth-child(4){animation-delay:.42s}.slide.active .fstep:nth-child(5){animation-delay:.52s}.slide.active .fstep:nth-child(6){animation-delay:.62s}
+    .slide.active .term { animation:v7TerminalDepth .64s .2s both; }
+    .slide.active .arrow-r { animation:v7NeonArrow .5s .82s both; }
+    @keyframes v7FlipIn { from { opacity:0; transform: rotateY(-22deg) translateZ(-120px) translateX(110px); filter: blur(8px); } to { opacity:1; transform:none; filter:none; } }
+    @keyframes v7FlipOut { to { opacity:0; transform: rotateY(16deg) translateZ(-100px) translateX(-90px); filter: blur(6px); } }
+    @keyframes v7FlipBackIn { from { opacity:0; transform: rotateY(22deg) translateZ(-120px) translateX(-110px); filter: blur(8px); } to { opacity:1; transform:none; filter:none; } }
+    @keyframes v7FlipBackOut { to { opacity:0; transform: rotateY(-16deg) translateZ(-100px) translateX(90px); filter: blur(6px); } }
+    @keyframes v7DepthChip { from { opacity:0; transform: translateZ(-60px) translateY(22px) scale(.92); } to { opacity:1; transform:none; } }
+    @keyframes v7NeonTitle { from { opacity:0; transform: translateZ(-90px) translateY(34px); text-shadow:0 0 0 rgba(147,115,255,0); } to { opacity:1; transform:none; } }
+    @keyframes v7PortraitTurn { from { opacity:0; transform: rotateY(-18deg) translateX(60px) scale(.92); } to { opacity:1; transform:none; } }
+    @keyframes v7GlassFloat { from { opacity:0; transform: translateY(46px) translateZ(-80px) rotateX(5deg); } to { opacity:1; transform:none; } }
+    @keyframes v7TerminalDepth { from { opacity:0; transform: rotateX(8deg) translateY(36px) scale(.96); filter: blur(6px); } to { opacity:1; transform:none; filter:none; } }
+    @keyframes v7NeonArrow { from { opacity:0; transform: scale(.55); filter: blur(10px) drop-shadow(0 0 0 rgba(147,115,255,0)); } to { opacity:1; transform:none; filter: drop-shadow(0 0 16px rgba(147,115,255,.45)); } }
+
+    @media (prefers-reduced-motion: reduce) { .slide, .slide.active, .slide.entering, .slide.exiting, .slide.active *, .slide.active::before, .slide.active::after { animation-duration: .01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; } }
   </style>
 </head>
 <body>
-<div class="stage">
+<div class="stage" id="root" data-composition-id="claude-code-deepseek-v7" data-start="0" data-duration="8" data-width="1920" data-height="1080">
   <!-- 漂浮3D球装饰 -->
   <div class="orb a"></div>
   <div class="orb b"></div>
@@ -516,48 +550,19 @@
 </div>
 
 <script>
-var S=[].slice.call(document.querySelectorAll('.slide')), i=0;
-function show(n){
-  i=(n+S.length)%S.length; 
-  S.forEach(function(s,k){
-    s.classList.toggle('active',k===i);
-  });
-  
-  // 更新导航点
-  var pagerDots = document.querySelectorAll('.pager');
-  pagerDots.forEach(function(dotWrapper, slideIndex) {
-    var dots = dotWrapper.querySelectorAll('i');
-    dots.forEach(function(dot, dotIdx) {
-      dot.classList.toggle('on', dotIdx === i);
-    });
-  });
-}
-
-function fit(){
-  var d=document.querySelector('.deck'); 
-  var k=Math.min(innerWidth/1920, innerHeight/1080); 
-  d.style.transform='scale('+k.toFixed(4)+')';
-}
-
-document.addEventListener('keydown',function(e){
-  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){show(i+1);e.preventDefault();}
-  else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){show(i-1);e.preventDefault();}
-});
-
-document.querySelector('.stage').addEventListener('click',function(e){ 
-  // 忽略对可交互卡片的点击翻页
-  if (e.target.closest('.glass') || e.target.closest('.term') || e.target.closest('.badge')) {
-    return;
-  }
-  if(e.clientX<innerWidth*.25) show(i-1); 
-  else show(i+1); 
-});
-
-addEventListener('resize',fit); 
-addEventListener('load',fit);
-var start=parseInt((location.hash||'').slice(1),10)||1; 
-show(start-1); 
-fit();
+var S=[].slice.call(document.querySelectorAll('.slide')), i=0, animTimer=0;
+var D=document.querySelector('.deck'), B=document.body;
+window.__timelines=window.__timelines||{};
+window.__timelines["claude-code-deepseek-v7"]={duration:function(){return 8;},time:function(){return 0;},pause:function(){},play:function(){},seek:function(){return 0;},totalTime:function(){return 0;}};
+function cleanMotionClasses(s){s.classList.remove('entering','exiting','direction-forward','direction-backward');}
+function paintBg(s){var c=s.getAttribute('data-bg'); if(c){B.style.background=c; B.style.backgroundImage='none';} else if(s.classList.contains('cover-slide')||s.classList.contains('outro-slide')){} }
+function updatePager(){document.querySelectorAll('.pager').forEach(function(w){w.querySelectorAll('i').forEach(function(dot,k){dot.classList.toggle('on',k===i);});});}
+function show(n,animate){var prev=i,next=(n+S.length)%S.length; var dir=(n<prev&&!(prev===S.length-1&&next===0))||(prev===0&&next===S.length-1)?'backward':'forward'; var oldSlide=S[prev],newSlide=S[next]; if(animTimer)clearTimeout(animTimer); S.forEach(cleanMotionClasses); i=next; paintBg(newSlide); fit(); updatePager(); if(!animate||oldSlide===newSlide){S.forEach(function(s,k){s.classList.toggle('active',k===i);}); return;} oldSlide.classList.remove('active'); oldSlide.classList.add('exiting','direction-'+dir); newSlide.classList.add('active','entering','direction-'+dir); animTimer=setTimeout(function(){oldSlide.classList.remove('exiting','direction-'+dir); newSlide.classList.remove('entering');},820);}
+function fit(){var k=Math.min(window.innerWidth/1920,window.innerHeight/1080); D.style.transform='scale('+k.toFixed(4)+')';}
+document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){show(i+1,true);e.preventDefault();}else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){show(i-1,true);e.preventDefault();}});
+document.querySelector('.stage').addEventListener('click',function(e){if(e.target.closest('[data-no-page-turn]'))return; if(e.clientX<window.innerWidth*.25)show(i-1,true);else show(i+1,true);});
+window.addEventListener('resize',fit); window.addEventListener('load',fit);
+var start=parseInt((location.hash||'').slice(1),10)||1; show(start-1,false); fit();
 </script>
 </body>
 </html>
