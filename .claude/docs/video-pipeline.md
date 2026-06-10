@@ -3,10 +3,29 @@
 把一篇文章做成成片视频的**完整闭环**，由两个 skill 接力（已在本机验证可跑，2026-06）：
 
 ```
-文章
- └─[visual-deck]→ 逐页大纲 → imgen 底图+HTML 叠字 / 信息页纯 HTML → 合成 deck → 截图校验
-       └─[hyperframes]→ 迁成 composition + 加可 seek 动画 → npx hyperframes render → MP4
+文章 / 抖音转写
+ └─① 口播稿 script.md（AI少年口播版，先产、先给用户过）
+      └─[visual-deck]→ 逐页大纲 → imgen 底图+HTML 叠字 / 信息页纯 HTML → 合成 deck → 截图校验
+            └─[hyperframes]→ 迁成 composition + 加可 seek 动画 → npx hyperframes render → MP4
+                  ↑ hyperframes-media 拿 script.md 做 TTS 配音 + Whisper 字幕
 ```
+
+### 第 0 步 · 口播稿 `script.md`（单一来源，流水线起点）
+
+口播词**不是任何 skill 自动生成的**——visual-deck 只产图文 HTML（大纲里没有口播字段）。所以每个成片项目目录都放一份 `script.md` 当**口播稿单一来源**：先产出、先让用户过，确认后才进出图和渲染。它一份文本同时驱动下游两件事：① 给 visual-deck 当「这页讲什么」的配图依据；② 给 `hyperframes-media` 做 TTS 配音 + Whisper 字幕。
+
+- **存放位置**：仓库根的**成片项目目录**里，跟该选题的 `deck/`、`*.mp4`、`transcript.md` **同级** —— 即 `<仓库根>/<选题目录>/script.md`（如 `douyin-codex-hyperframes/script.md`）。选题目录沿用既有惯例：抖音来源用「作者-标题前20字」（见 `小墨同学-…/`），自拟选题用描述性短名（见 `douyin-codex-hyperframes/`、`stepfun-deck/`）。**不落在 skill 目录、不落 `downloads/`**。
+- **来源两条路**：给文章 → 我拆解后**写** script.md；给抖音链接 → `douyin-video-transcribe` 转写，毛坯落 `transcript.md`，我把整理润色后的「AI少年口播版」誊进 `script.md`（参考既有样例 `douyin-codex-hyperframes/transcript.md`）。
+- **固定头尾（IP 一致，每条必带）**：开场先抛钩子再自报家门「**大家好，我是 AI少年**」；结尾固定「**AI 的事，听 AI少年 说，关注我，咱们下期接着聊**」。
+- **结构约定**：
+  ```markdown
+  # <选题> — 口播稿
+  - 来源 / 目标平台 / 时长目标 / 人物底座(persona-clay-v5.png)
+  ## 口播正文（AI少年口播版，可直接念 / 喂 TTS）
+     <钩子 → 自报家门 → 分段正文 → 固定尾>
+  ## 分页对应（口播段 → deck 页 → 页类型）   ← 即 visual-deck 的逐页大纲，避免重复
+  ```
+- **真实底线**：经历、数字、踩坑细节不编；用户没给的留 `> [!待补]` 占位问用户（沿用 visual-deck 第1步的底线）。
 
 - **前半段（visual-deck）**：见上文，产物是可翻页静态 HTML deck。
 - **后半段（hyperframes）**：HeyGen 的 hyperframes（`npx skills add heygen-com/hyperframes` 装的一套 skill：`hyperframes` 主体 + `hyperframes-cli`/`-media`/`-registry` + gsap/animejs/css-animations/waapi/lottie/three/typegpu/tailwind 适配器 + website-to-hyperframes 等）。把带动画的 HTML composition **逐帧渲染成确定性 MP4**。
