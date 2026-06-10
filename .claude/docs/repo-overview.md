@@ -2,8 +2,7 @@
 
 这是「AI 少年」的**内容创作工作区**（面向抖音 / B 站 / 视频号的 AI 科普内容），不是单一应用。它由几个相互独立的产物 + 安装好的 skills 组成：
 
-- `ai-agent-video/` — 一期视频项目。`article.md`/`script.md`/`outline.md` 是内容三件套，`presentation/` 是把口播稿做成「看起来像视频」的网页（Vite + React + TS）。由 `web-video-presentation` skill 脚手架产出。
-- `deck/` — 独立的全屏图文 HTML 演示稿（粘土风，10 页，主题「Codex 接入国产模型」），纯静态 HTML/CSS，由 `visual-deck-main` skill 产出。与 `ai-agent-video` **无代码关联**。
+- `deck/` — 独立的全屏图文 HTML 演示稿（粘土风，10 页，主题「Codex 接入国产模型」），纯静态 HTML/CSS，由 `visual-deck-main` skill 产出。
 - `garden-skills-main/` — clone 的 garden skills 源码仓库（skills 的来源），一般只读。
 - `kb-retriever-1.0.0/` — 知识库检索 skill 的打包目录。
 - `.agents/skills/` 与 `.claude/skills/` — 安装的 skills。⚠️ 见「Skills 同步」。

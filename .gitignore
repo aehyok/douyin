@@ -1,0 +1,23 @@
+# === 操作系统 / 编辑器垃圾 ===
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# === 日志 / 临时产物 ===
+*.log
+debug.log
+
+# === 抖音转写产物（链接 → mp4 + txt）===
+/downloads/
+
+# === 依赖 / 虚拟环境（skill 自带 venv、node_modules 不入库）===
+node_modules/
+**/venv/
+.venv/
+__pycache__/
+*.pyc
+
+# === 人工校验截图（puppeteer 产物，非自动化测试，需要时再 git add -f）===
+verify-step-*.png
