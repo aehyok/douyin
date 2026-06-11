@@ -9,9 +9,6 @@ desktop.ini
 *.log
 debug.log
 
-# === 抖音转写产物（链接 → mp4 + txt）===
-/downloads/
-
 # === 依赖 / 虚拟环境（skill 自带 venv、node_modules 不入库）===
 node_modules/
 **/venv/
