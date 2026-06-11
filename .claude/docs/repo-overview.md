@@ -4,11 +4,11 @@
 
 > ⚠️ **署名归位规则**：转写 / 搬运别人的视频做成本仓库的成品时，结尾 CTA、署名、品牌一律换成「AI少年」，**别保留原作者**。例：转写「小墨同学」的抖音视频做 PPT，原口播结尾「关注小墨」，成品必须改成「关注 AI少年」（曾踩坑：`codex-skills-deck` 初版误留了「关注小墨」）。
 
-它由几个相互独立的产物 + 安装好的 skills 组成：
+它由若干相互独立的**选题项目目录** + 公共资产 + 安装好的 skills 组成：
 
-- `deck/` — 独立的全屏图文 HTML 演示稿（粘土风，10 页，主题「Codex 接入国产模型」），纯静态 HTML/CSS，由 `visual-deck-main` skill 产出。
-- `garden-skills-main/` — clone 的 garden skills 源码仓库（skills 的来源），一般只读。
-- `kb-retriever-1.0.0/` — 知识库检索 skill 的打包目录。
+- **选题项目目录**（仓库根下，一个选题一个目录）：抖音来源用「作者-标题前20字」命名（如 `小墨同学-…/`、`雨哥聊AI-…/`），自拟选题用描述性短名（如 `deck/`、`stepfun-deck/`、`codex-skills-deck/`、`claude-code-deepseek/`、`douyin-codex-hyperframes/`、`douyin-claude-code-config/`）。产物多为纯静态 HTML deck，部分含转写 txt / 口播稿 / 成片 mp4。
+- `character/` — 统一人物底座（视觉 IP），见「统一人物底座」一节。
+- `archive/` — 已归档的旧产物，一般不动。
 - `.agents/skills/` 与 `.claude/skills/` — 安装的 skills。⚠️ 见「Skills 同步」。
 
-整个仓库**不是 git 仓库**（`git rev-parse` 失败）。
+整个仓库**是 git 仓库**（remote：`github.com/aehyok/douyin`，主分支 `master`，提交用 Conventional Commit 中文风格，如 `feat:` / `chore:` / `docs:`）。

@@ -14,8 +14,9 @@
 
 口播词**不是任何 skill 自动生成的**——visual-deck 只产图文 HTML（大纲里没有口播字段）。所以每个成片项目目录都放一份 `script.md` 当**口播稿单一来源**：先产出、先让用户过，确认后才进出图和渲染。它一份文本同时驱动下游两件事：① 给 visual-deck 当「这页讲什么」的配图依据；② 给 `hyperframes-media` 做 TTS 配音 + Whisper 字幕。
 
-- **存放位置**：仓库根的**成片项目目录**里，跟该选题的 `deck/`、`*.mp4`、`transcript.md` **同级** —— 即 `<仓库根>/<选题目录>/script.md`（如 `douyin-codex-hyperframes/script.md`）。选题目录沿用既有惯例：抖音来源用「作者-标题前20字」（见 `小墨同学-…/`），自拟选题用描述性短名（见 `douyin-codex-hyperframes/`、`stepfun-deck/`）。**不落在 skill 目录、不落 `downloads/`**。
-- **来源两条路**：给文章 → 我拆解后**写** script.md；给抖音链接 → `douyin-video-transcribe` 转写，毛坯落 `transcript.md`，我把整理润色后的「AI少年口播版」誊进 `script.md`（参考既有样例 `douyin-codex-hyperframes/transcript.md`）。
+- **存放位置**：仓库根的**成片项目目录**里，跟该选题的 `deck/`、`*.mp4`、`transcript.md` **同级** —— 即 `<仓库根>/<选题目录>/script.md`。选题目录沿用既有惯例：抖音来源用「作者-标题前20字」（见 `小墨同学-…/`、`雨哥聊AI-…/`），自拟选题用描述性短名（见 `douyin-codex-hyperframes/`、`stepfun-deck/`）。**不落在 skill 目录、不落 `downloads/`**。
+- **完整样例（模板）**：`雨哥聊AI-撞限别干等…/` 是流水线全量产物的参考结构 —— `script.md`（口播稿）+ `transcript.md`（转写毛坯）+ 原视频 `<视频ID>.mp4`/`.txt` + `deck/`（图文稿）+ `video/`（hyperframes composition）+ `build_tts.py`/`narration.wav`（配音）+ `*-成片.mp4`（最终成片）。新建成片项目照这个结构来。
+- **来源两条路**：给文章 → 我拆解后**写** script.md；给抖音链接 → `douyin-video-transcribe` 转写，毛坯落 `transcript.md`，我把整理润色后的「AI少年口播版」誊进 `script.md`（样例见 `雨哥聊AI-撞限别干等…/script.md` 与同目录 `transcript.md` 的对照）。
 - **固定头尾（IP 一致，每条必带）**：开场先抛钩子再自报家门「**大家好，我是 AI少年**」；结尾固定「**AI 的事，听 AI少年 说，关注我，咱们下期接着聊**」。
 - **结构约定**：
   ```markdown
