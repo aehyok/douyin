@@ -347,6 +347,15 @@ def parse_video_id(video_id, session):
         if url_list:
             cover_url = get_no_webp_url(url_list)
     
+    # 提取互动数据（点赞/收藏/评论/转发/播放）
+    raw_stats = data.get('statistics', {}) or {}
+    statistics = {
+        'digg_count': raw_stats.get('digg_count', 0),      # 点赞
+        'collect_count': raw_stats.get('collect_count', 0),  # 收藏
+        'comment_count': raw_stats.get('comment_count', 0),  # 评论
+        'share_count': raw_stats.get('share_count', 0),     # 转发
+    }
+
     result = {
         'title': data.get('desc', ''),
         'video_url': video_url,
@@ -357,6 +366,7 @@ def parse_video_id(video_id, session):
             'name': data.get('author', {}).get('nickname', ''),
             'avatar': data.get('author', {}).get('avatar_thumb', {}).get('url_list', [None])[0],
         },
+        'statistics': statistics,
     }
     
     # 步骤5：获取302重定向之后的真实视频地址
@@ -456,6 +466,33 @@ def sanitize_title_for_dir(title, fallback='video', max_len=50):
     return name or fallback
 
 
+def write_statistics_file(stats_file, share_url, video_id, result):
+    """把互动数据写入 Markdown 文件（与视频同目录）"""
+    from datetime import date
+    st = result.get('statistics', {}) or {}
+    author = result.get('author', {}) or {}
+    lines = [
+        f"# {author.get('name', '未知作者')} · 视频互动数据",
+        '',
+        f"- 来源链接：{share_url}",
+        f"- 视频 ID：{video_id}",
+        f"- 作者：{author.get('name', '')}",
+        f"- 标题：{result.get('title', '')}",
+        f"- 数据抓取时间：{date.today().isoformat()}",
+        '',
+        '## 互动数据',
+        '',
+        '| 指标 | 数量 |',
+        '|------|------|',
+        f"| 👍 点赞（digg_count） | {st.get('digg_count', 0)} |",
+        f"| ⭐ 收藏（collect_count） | {st.get('collect_count', 0)} |",
+        f"| 💬 评论（comment_count） | {st.get('comment_count', 0)} |",
+        f"| 🔁 转发（share_count） | {st.get('share_count', 0)} |",
+        '',
+    ]
+    stats_file.write_text('\n'.join(lines), encoding='utf-8')
+
+
 def main():
     parser = argparse.ArgumentParser(description='解析抖音分享链接，下载视频，并转成文字')
     parser.add_argument('url', type=str, help='抖音分享链接')
@@ -519,7 +556,16 @@ def main():
             print(f'昵称: {result["author"].get("name", "")}')
             print(f'UID: {result["author"].get("uid", "")}')
             print(f'头像: {result["author"].get("avatar", "")}')
-        
+
+        if result.get('statistics'):
+            st = result['statistics']
+            print('')
+            print('互动数据:')
+            print(f'点赞: {st.get("digg_count", 0)}')
+            print(f'收藏: {st.get("collect_count", 0)}')
+            print(f'评论: {st.get("comment_count", 0)}')
+            print(f'转发: {st.get("share_count", 0)}')
+
         # 若处于自动模式，按「作者-标题前20字」确定子文件夹名（都不可用时回退到视频ID）
         if auto_base is not None:
             fallback_id = parse_video_id_from_path(args.url) or 'video'
@@ -548,7 +594,13 @@ def main():
             print(f'正在下载视频到: {output_path}')
             download_video(video_url, output_path, session)
             print(f'视频下载完成: {output_path}')
-            
+
+            # 保存互动数据到同目录的 互动数据.md
+            if result.get('statistics'):
+                stats_file = output_dir / '互动数据.md'
+                write_statistics_file(stats_file, args.url, video_id, result)
+                print(f'互动数据已保存到: {stats_file}')
+
             # 转文字
             if args.transcribe:
                 print('')
