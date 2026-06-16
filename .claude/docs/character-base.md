@@ -1,6 +1,6 @@
 ## 统一人物底座（视觉 IP）
 
-`character/` 是整个工作区的**统一人物底座**——所有产物（`deck/`、`stepfun-deck/`、`claude-code-deepseek/` 等）的封面 / 视觉页 / 口播配图 / IP 形象都用这一个，保持形象一致、不要各做各的。
+`character/` 是整个工作区的**统一人物底座**——所有产物（`deck/`、`claude-code-deepseek/` 等）的封面 / 视觉页 / 口播配图 / IP 形象都用这一个，保持形象一致、不要各做各的。
 
 - 设定文档：`character/persona.md`（外形 / 服装 / 粘土风规格 / imgen 主体描述槽位）
 - 当前主形象：`persona-clay-v5.png`（东亚青年男 + 黑框矩形眼镜 + 珊瑚橘短袖 + 橙色头戴耳机 + 笔记本印 Apple 图标，3D 粘土定格风），配薰衣草紫夜窗背景

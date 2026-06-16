@@ -6,7 +6,7 @@
 
 它由若干相互独立的**选题项目目录** + 公共资产 + 安装好的 skills 组成：
 
-- **选题项目目录**（仓库根下，一个选题一个目录）：抖音来源用「作者-标题前20字」命名（如 `小墨同学-…/`、`雨哥聊AI-…/`），自拟选题用描述性短名（如 `deck/`、`stepfun-deck/`、`codex-skills-deck/`、`claude-code-deepseek/`、`douyin-codex-hyperframes/`、`douyin-claude-code-config/`）。产物多为纯静态 HTML deck，部分含转写 txt / 口播稿 / 成片 mp4。
+- **选题项目目录**（仓库根下，一个选题一个目录）：抖音来源用「作者-标题前20字」命名（如 `小墨同学-…/`、`雨哥聊AI-…/`），自拟选题用描述性短名（如 `deck/`、`claude-code-deepseek/`）。产物多为纯静态 HTML deck，部分含转写 txt / 口播稿 / 成片 mp4。
 - `character/` — 统一人物底座（视觉 IP），见「统一人物底座」一节。
 - `archive/` — 已归档的旧产物，一般不动。
 - `.agents/skills/` 与 `.claude/skills/` — 安装的 skills。⚠️ 见「Skills 同步」。

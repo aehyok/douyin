@@ -35,14 +35,12 @@ AISpark_douyin/
 │   └── persona-clay.png          #    早期藏青连帽版备份
 │
 ├── deck/                         # 自拟选题 — AI Agent 科普 deck
-├── stepfun-deck/                 # 自拟选题 — StepFun 阶跃星辰 deck
-├── codex-skills-deck/            # 自拟选题 — Codex Skills deck
 ├── claude-code-deepseek/         # 自拟选题 — Claude Code + DeepSeek（多版本迭代）
-├── douyin-codex-hyperframes/     # 自拟选题 — Codex HyperFrames 转写
-├── douyin-claude-code-config/    # 自拟选题 — Claude Code 配置教程
 │
-├── 小墨同学-Codex强的根本不是…/    # 抖音转写 — 小墨同学的视频二创
-├── 雨哥聊AI-撞限别干等…/          # 抖音转写 — 雨哥聊AI的视频二创（含成片）
+├── 小墨同学-Codex国产平替…/        # 抖音转写 — 小墨同学（国产 AI Agent）
+├── 小墨同学-Codex强的根本不是…/    # 抖音转写 — 小墨同学（Codex 真正用法）
+├── 浩辰 alex（AI版）-2 个配置…/    # 抖音转写 — 浩辰 alex（Claude Code 配置）
+├── 雨哥聊AI-撞限别干等…/          # 抖音转写 — 雨哥聊AI（含成片）
 │
 ├── archive/                      # 📦 已归档的旧产物
 ├── .agents/skills/               # 🔧 已安装的 Agent Skills
@@ -59,7 +57,7 @@ AISpark_douyin/
 | 来源 | 命名规则 | 示例 |
 |---|---|---|
 | 抖音转写 | `作者名-标题前20字` | `雨哥聊AI-撞限别干等!一个设置让 Codex 额度` |
-| 自拟选题 | 描述性短名 | `claude-code-deepseek`、`stepfun-deck` |
+| 自拟选题 | 描述性短名 | `claude-code-deepseek`、`deck` |
 
 ### 成片项目目录结构（参考）
 
