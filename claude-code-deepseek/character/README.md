@@ -1,10 +1,12 @@
 # AI 少年 · 固定人物素材
 
-本目录保存 `claude-code-deepseek` 项目的固定人物参考与历史人物素材。
+> ⚠️ **以全局底座为准**：整个工作区的统一人物底座是仓库根的 [`character/persona-clay-v5.png`](../../character/persona-clay-v5.png)（设定见 [`character/persona.md`](../../character/persona.md)），「不要各做各的」。本目录是 `claude-code-deepseek` 项目早期自建的本地素材，**仅作历史快照保留**——新产出请优先用全局底座，三大辨识锚点一致即可（黑框矩形眼镜 / 珊瑚橘短袖 / 笔记本发光 Apple 图标）。
 
-## 当前固定设定
+本目录保存 `claude-code-deepseek` 项目早期的人物参考与历史人物素材。
 
-后续本项目所有封面、结尾页、视觉底图、视频帧、人物素材，必须使用同一套人物设定：
+## 早期项目设定（历史，与全局底座一致即可）
+
+本项目早期产物使用的人物设定（与全局底座同一形象，措辞略有差异）：
 
 - 3D 黏土风格，soft matte plasticine texture。
 - 年轻男性技术博主，正面坐在笔记本电脑前。
@@ -32,7 +34,7 @@
 
 ## 生成约束
 
-- 新图必须以 `reference-fixed.png` 为 img2img / reference image。
+- 新图优先以全局底座 `../../character/persona-clay-v5.png` 为 img2img / reference image（本地 `reference-fixed.png` 仅作历史参考）。
 - 不要再生成紫色/蓝色 hoodie 版本。
 - 不要改成其他发型、无眼镜、不同年龄感的人物。
 - 不要把人物改成扁平卡通、写实照片、赛博朋克、二次元等风格。

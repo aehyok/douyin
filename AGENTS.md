@@ -22,9 +22,9 @@
 
 ## 仓库结构（概要，详见 repo-overview.md）
 
-内容创作工作区，不是单一应用。仓库根下**一个选题一个项目目录**（抖音来源用「作者-标题前20字」命名，自拟选题用描述性短名），产物多为纯静态 HTML deck，部分含转写 txt / 口播稿 script.md / 成片 mp4。公共资产：`character/`（人物底座）、`archive/`（归档）。skills 在 `.agents/skills/` 与 `.claude/skills/`，当 vendor 内容对待，除非明确在更新 skill。
+内容创作工作区，不是单一应用。仓库根下**一个选题一个项目目录**（抖音来源用「作者-标题前20字」命名，自拟选题用描述性短名），产物多为纯静态 HTML deck，部分含转写 txt / 口播稿 script.md / 成片 mp4。公共资产：`character/`（人物底座）。skills 在 `.agents/skills/` 与 `.claude/skills/`，当 vendor 内容对待，除非明确在更新 skill。
 
-本仓库**是 git 仓库**（remote：`github.com/aehyok/douyin`，主分支 `master`）。
+本仓库**是 git 仓库**（remote：`github.com/aehyok/douyin`，主分支 `main`）。
 
 ## 开发与校验约定
 

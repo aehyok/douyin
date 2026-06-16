@@ -42,12 +42,13 @@ AISpark_douyin/
 ├── 浩辰 alex（AI版）-2 个配置…/    # 抖音转写 — 浩辰 alex（Claude Code 配置）
 ├── 雨哥聊AI-撞限别干等…/          # 抖音转写 — 雨哥聊AI（含成片）
 │
-├── archive/                      # 📦 已归档的旧产物
-├── .agents/skills/               # 🔧 已安装的 Agent Skills
-├── .claude/                      # 🤖 Claude 配置与文档
+├── .agents/skills/               # 🔧 已安装的 Agent Skills（vendor）
+├── .claude/                      # 🤖 Claude 配置与文档（skills + docs）
+├── .codex/skills/                # 🔧 Codex 侧 skills
 │
-├── AGENTS.md                     # Agent 协作规则索引
+├── AGENTS.md                     # Agent 协作规则索引（Codex 等）
 ├── CLAUDE.md                     # Claude 项目规则
+├── skills-lock.json              # skills 安装锁定文件
 ├── .gitignore
 └── README.md                     # 👈 你在这里
 ```
@@ -70,8 +71,10 @@ AISpark_douyin/
 ├── <视频ID>.mp4          # 原视频文件
 ├── <视频ID>.txt          # 原视频字幕
 ├── deck/                 # 图文演示稿（HTML Deck）
-│   ├── index.html
-│   └── assets/
+│   ├── index.html        #   翻页主文件
+│   ├── *.css             #   粘土风样式
+│   ├── bg-*.png          #   imgen 生成的视觉底图
+│   └── verify-p*.png     #   逐页校验截图
 ├── video/                # HyperFrames composition
 ├── build_tts.py          # TTS 配音构建脚本
 ├── narration.wav         # 配音音频
@@ -158,6 +161,9 @@ AISpark_douyin/
 
 ```bash
 # 例如查看 Claude Code + DeepSeek 最新版 deck
+# macOS：
+open claude-code-deepseek/deck_v8/index.html
+# Windows：
 start claude-code-deepseek/deck_v8/index.html
 ```
 

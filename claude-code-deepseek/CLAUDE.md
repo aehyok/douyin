@@ -2,13 +2,16 @@
 
 本目录是「从零安装 Claude Code 并接入 DeepSeek」这期内容的独立项目。后续生成演示稿、封面、结尾页、人物素材、视频帧或任何视觉图时，必须优先遵守本文件。
 
+> ⚠️ **以全局底座为准**：人物形象统一用仓库根的 `../character/persona-clay-v5.png`（设定见 `../character/persona.md`），「不要各做各的」。本目录下的 `character/reference-fixed.png` 是早期本地素材，仅作历史快照——新产出请用全局底座，下面的特征描述与之一致，措辞略有差异。
+
 ## 固定人物设定
 
-人物设定已经固定，后续不要随意重画成其他形象。
+人物形象统一用全局底座，不要随意重画成其他形象。
 
-固定参考图：
+参考图（优先全局底座）：
 
-- `character/reference-fixed.png`
+- `../character/persona-clay-v5.png`（全局底座，首选）
+- `character/reference-fixed.png`（本项目早期本地素材，历史参考）
 
 固定角色特征：
 
@@ -30,7 +33,7 @@
 
 ## 生成视觉页时的提示词基准
 
-需要生成新底图时，以 `character/reference-fixed.png` 作为 img2img / reference image。提示词可从下面这段改：
+需要生成新底图时，以全局底座 `../character/persona-clay-v5.png` 作为 img2img / reference image（本地 `character/reference-fixed.png` 仅作历史参考）。提示词可从下面这段改：
 
 ```text
 3D clay claymation style, same character as the reference image: a young Chinese male tech creator with dark tousled hair, black square glasses, orange T-shirt, sitting behind a laptop, gentle smile, soft matte plasticine texture, clean tutorial creator look, pale lavender background, horizontal 16:9 composition, leave clean empty space for HTML title overlay, NO text anywhere in the image.
