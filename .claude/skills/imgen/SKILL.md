@@ -35,7 +35,7 @@ imgen "<想怎么改>" -i <输入.png> -o <输出.png>
 |---|---|
 | `-s, --size` | 如 `1024x1024` / `1024x1536` / `3840x2160`(4K)；最长边 ≤ 3840；默认 auto |
 | `-q, --quality` | `low` / `medium` / `high` / `auto`（默认 auto） |
-| `-b, --background` | `transparent`（透明，做贴纸/图标）/ `opaque` / `auto` |
+| `-b, --background` | `opaque` / `auto`。⚠️ 后端**不支持** `transparent`，传了直接报 400；做贴纸/图标请出白底再抠图 |
 | `-n, --count` | 生成数量（>1 输出 `out-1.png` `out-2.png`…） |
 
 ## 流程
@@ -62,10 +62,11 @@ imgen "a red fox sitting in deep snow, cinematic, soft morning light" -s 1024x15
 imgen "make it nighttime with neon lighting, keep the fox and composition" -i fox.png -o fox-neon.png
 ```
 
-**Example 3 — 透明贴纸**
+**Example 3 — 贴纸（白底再抠）**
 用户：做个猫咪贴纸，要透明背景
+> 后端不支持透明背景，`-b transparent` 会 400。改为出**纯白底**贴纸，再用抠图工具（如 visual-deck 的 `chroma_cut.py`）去白。
 ```bash
-imgen "a cute cartoon cat sticker, bold clean outline" -b transparent -o cat.png
+imgen "a cute cartoon cat sticker, bold clean outline, solid white background" -o cat.png
 ```
 
 ## 注意

@@ -173,19 +173,19 @@ pip install torch>=1.13 torchaudio funasr>=1.0.0
 
 **macOS/Linux:**
 ```bash
-cd .cursor/skills/douyin-video-transcribe
+cd .claude/skills/douyin-video-transcribe
 ./scripts/run.sh "https://v.douyin.com/xxxxx"
 ```
 
 **Windows:**
 ```cmd
-cd .cursor\skills\douyin-video-transcribe
+cd .claude\skills\douyin-video-transcribe
 scripts\run.bat "https://v.douyin.com/xxxxx"
 ```
 
 **Python 跨平台（推荐）:**
 ```bash
-cd .cursor/skills/douyin-video-transcribe
+cd .claude/skills/douyin-video-transcribe
 python scripts/run.py "https://v.douyin.com/xxxxx"
 ```
 
@@ -201,7 +201,7 @@ python scripts/run.py "https://v.douyin.com/xxxxx"
 
 ```bash
 # 1. 进入skill目录
-cd .cursor/skills/douyin-video-transcribe
+cd .claude/skills/douyin-video-transcribe
 
 # 2. 创建虚拟环境（会提示是否安装FunASR）
 python scripts/setup_venv.py
@@ -231,7 +231,7 @@ python scripts/parse_douyin_video.py "https://v.douyin.com/xxxxx"
 
 **⭐ 推荐：使用启动脚本（会自动创建虚拟环境）:**
 ```bash
-cd .cursor/skills/douyin-video-transcribe
+cd .claude/skills/douyin-video-transcribe
 python scripts/run.py "https://v.douyin.com/xxxxx" --transcribe
 ```
 
@@ -256,12 +256,13 @@ python scripts/setup_venv.py
 
 ```bash
 python scripts/parse_douyin_video.py <分享链接> \
-  --output-dir ./downloads \          # 输出目录，默认 ./downloads
   --transcribe \                       # 是否转文字
   --model paraformer-zh \             # ASR模型，默认为 paraformer-zh
   --vad-model fsmn-vad \              # VAD模型，默认为 fsmn-vad
   --punc-model ct-punc                # 标点恢复模型，默认为 ct-punc
 ```
+
+> ⚠️ **本仓库铁律：绝不要传 `--output-dir`。** 该参数默认就是 `None`——在 skill 目录下执行（脚本检测到 `SKILL.md`）时会自动落到**项目根**、按 `作者-标题前20字` 建独立子文件夹存 `<视频ID>.mp4` + `.txt`；一旦手动传 `--output-dir`，就会覆盖这套逻辑、文件落到 skill 内的 `downloads/`。
 
 ## 脚本说明
 
@@ -430,7 +431,7 @@ pip install funasr>=1.0.0
    - 安装顺序：先安装 torch 和 torchaudio，再安装 funasr
 6. **模型下载** - FunASR 首次运行时会下载模型，请确保网络连接稳定
 7. **视频格式** - 下载的视频格式为 MP4，可直接播放
-8. **输出文件** - 视频文件保存为 `{video_id}.mp4`，转文字结果保存为 `{video_id}.txt`
+8. **输出文件** - 视频文件保存为 `{video_id}.mp4`，转文字结果保存为 `{video_id}.txt`；不传 `--output-dir` 时（推荐），二者落到**项目根**按 `作者-标题前20字` 建的子文件夹里（标题不可用时回退到视频ID）
 9. **磁盘空间** - torch 和 FunASR 模型文件较大，确保有足够的磁盘空间（建议至少5GB）
 
 ## 错误处理
@@ -469,22 +470,22 @@ pip install funasr>=1.0.0
    - **手动解决**：激活虚拟环境后运行 `pip install funasr`
    - **直接解决**：运行 `pip install funasr`（仅在使用转文字功能时需要）
 
-3. **虚拟环境创建失败**
+4. **虚拟环境创建失败**
    - 检查 Python 版本（需要 3.6+）
    - 确认系统已安装 `venv` 模块（Python 3.3+ 自带）
    - 检查磁盘空间和写入权限
 
-4. **无法解析分享链接**
+5. **无法解析分享链接**
    - 检查链接格式是否正确
    - 检查网络连接是否正常
    - 确认链接未被删除或设为私密
 
-5. **视频下载失败**
+6. **视频下载失败**
    - 检查网络连接
    - 确认输出目录有写入权限
    - 检查磁盘空间是否充足
 
-6. **转文字失败**
+7. **转文字失败**
    - 确认已安装 FunASR 及其前置依赖：
      ```bash
      pip list | grep -E "(torch|torchaudio|funasr)"
@@ -495,7 +496,7 @@ pip install funasr>=1.0.0
    - 查看错误信息中的具体错误原因
    - 首次运行 FunASR 需要下载模型，请确保网络连接稳定
 
-7. **torch 安装失败或很慢**
+8. **torch 安装失败或很慢**
    - 使用国内镜像源加速：
      ```bash
      pip install torch torchaudio -i https://pypi.tuna.tsinghua.edu.cn/simple
@@ -503,8 +504,16 @@ pip install funasr>=1.0.0
    - 检查网络连接是否稳定
    - 确保有足够的磁盘空间（torch 安装包较大）
 
-8. **FunASR 安装失败**
+9. **FunASR 安装失败**
    - 确认已正确安装前置依赖（torch >= 1.13, torchaudio）
    - 确认 Python 版本 >= 3.8
    - 尝试单独安装：`pip install funasr --no-deps` 然后手动安装依赖
    - 查看详细错误信息，根据错误提示解决问题
+
+10. **Windows 特有：GBK 报错 / pip 被代理挡（SOCKS）**
+    - 现象：运行时 emoji 触发 `UnicodeEncodeError: 'gbk'`；或装依赖时 `Missing dependencies for SOCKS support`
+    - 解决：先清代理 + 强制 UTF-8 再跑（macOS 无需此步）：
+      ```bash
+      unset ALL_PROXY all_proxy HTTP_PROXY HTTPS_PROXY http_proxy https_proxy
+      PYTHONUTF8=1 PYTHONIOENCODING=utf-8 python scripts/parse_douyin_video.py "<链接>" --transcribe
+      ```
